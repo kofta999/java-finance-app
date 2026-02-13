@@ -12,18 +12,25 @@ import java.util.List;
 public class TransactionParser {
 
     public static List<Transaction> fromCsvFile(Path filePath)
-        throws IOException {
+        throws TransactionParsingException {
         var mapper = new CsvMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         var schema = CsvSchema.emptySchema().withHeader();
 
-        MappingIterator<Transaction> iterator = mapper
-            .readerFor(Transaction.class)
-            .with(schema)
-            .readValues(filePath.toFile());
-
-        return iterator.readAll();
+        try (
+            MappingIterator<Transaction> iterator = mapper
+                .readerFor(Transaction.class)
+                .with(schema)
+                .readValues(filePath.toFile());
+        ) {
+            return iterator.readAll();
+        } catch (IOException e) {
+            throw new TransactionParsingException(
+                "Failed to parse transactions from: " + filePath,
+                e
+            );
+        }
     }
 }

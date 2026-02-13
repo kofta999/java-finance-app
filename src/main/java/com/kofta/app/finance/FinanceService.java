@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 public class FinanceService {
 
     public double calculateTotal(List<Transaction> transactions) {
-        return transactions.stream().mapToDouble(Transaction::getAmount).sum();
+        return transactions.stream().mapToDouble(Transaction::amount).sum();
     }
 
     public List<Transaction> filterByCategory(
@@ -18,7 +18,7 @@ public class FinanceService {
     ) {
         return transactions
             .stream()
-            .filter(t -> t.getCategory() == category)
+            .filter(t -> t.category() == category)
             .toList();
     }
 
@@ -27,8 +27,8 @@ public class FinanceService {
             .stream()
             .collect(
                 Collectors.groupingBy(
-                    Transaction::getCategory,
-                    Collectors.summingDouble(Transaction::getAmount)
+                    Transaction::category,
+                    Collectors.summingDouble(Transaction::amount)
                 )
             );
     }

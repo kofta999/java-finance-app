@@ -29,6 +29,7 @@ public class FinanceConsole {
 
             System.out.print("Select a choice: ");
             String choice = scanner.nextLine();
+            System.out.println();
 
             switch (choice) {
                 case "1" -> printRemainingBalance();
@@ -51,6 +52,7 @@ public class FinanceConsole {
             2. Show Summary (by category)
             3. Filter by category
             4. Exit
+            -----------------------
             """
         );
     }
@@ -78,6 +80,7 @@ public class FinanceConsole {
     void printFilterByCategory() {
         System.out.print("Category: ");
         var category = Category.fromString(scanner.nextLine());
+        System.out.println();
 
         if (category.isEmpty()) {
             System.out.println("Invalid Category.");
@@ -91,5 +94,6 @@ public class FinanceConsole {
             .collect(Collectors.joining("\n"));
 
         System.out.println(result);
+        System.out.println();
     }
 }

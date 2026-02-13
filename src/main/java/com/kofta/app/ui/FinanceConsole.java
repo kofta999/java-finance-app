@@ -83,7 +83,7 @@ public class FinanceConsole {
         System.out.println();
 
         if (category.isEmpty()) {
-            System.out.println("Invalid Category.");
+            System.out.println("Invalid Category.\n");
             return;
         }
 

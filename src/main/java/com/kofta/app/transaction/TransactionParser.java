@@ -17,7 +17,13 @@ public class TransactionParser {
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        var schema = CsvSchema.emptySchema().withHeader();
+        var schema = CsvSchema.builder()
+            .addColumn("date")
+            .addColumn("description")
+            .addColumn("amount")
+            .addColumn("category")
+            .setUseHeader(true)
+            .build();
 
         try (
             MappingIterator<Transaction> iterator = mapper

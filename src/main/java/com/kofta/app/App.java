@@ -1,13 +1,11 @@
 package com.kofta.app;
 
+import com.kofta.app.finance.FinanceService;
 import com.kofta.app.transaction.TransactionParser;
+import com.kofta.app.ui.FinanceConsole;
 import java.nio.file.Paths;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class App {
-
-    private static final Logger logger = LoggerFactory.getLogger(App.class);
 
     public static void main(String[] args) {
         try {
@@ -16,8 +14,12 @@ public class App {
             );
 
             var transactions = TransactionParser.fromCsvFile(filePath);
+            var financeConsole = new FinanceConsole(
+                new FinanceService(),
+                transactions
+            );
 
-            transactions.forEach(t -> System.out.println(t));
+            financeConsole.start();
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }

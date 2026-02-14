@@ -32,18 +32,18 @@
   </dependencyManagement>
 
   <dependencies>
-      <dependency>
+      <!-- <dependency>
           <groupId>org.projectlombok</groupId>
           <artifactId>lombok</artifactId>
           <version>1.18.42</version>
           <scope>provided</scope>
-      </dependency>
+      </dependency> -->
 
-      <dependency>
+      <!-- <dependency>
           <groupId>ch.qos.logback</groupId>
           <artifactId>logback-classic</artifactId>
           <version>1.5.6</version>
-      </dependency>
+      </dependency> -->
 
       <dependency>
           <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -67,7 +67,7 @@
 
   <build>
 	<plugins>
-		<plugin>
+		<!-- <plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-compiler-plugin</artifactId>
 			<configuration>
@@ -79,7 +79,29 @@
 					</path>
 				</annotationProcessorPaths>
 			</configuration>
-		</plugin>
+		</plugin> -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>3.5.2</version>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>shade</goal>
+                    </goals>
+                    <configuration>
+                        <transformers>
+                            <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"
+                                >
+                                <mainClass>com.kofta.app.App</mainClass>
+                            </transformer>
+                        </transformers>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
 	</plugins>
 
     <pluginManagement

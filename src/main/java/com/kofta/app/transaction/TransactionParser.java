@@ -6,12 +6,12 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
-import java.nio.file.Path;
+import java.io.InputStream;
 import java.util.List;
 
 public class TransactionParser {
 
-    public static List<Transaction> fromCsvFile(Path filePath)
+    public static List<Transaction> fromCsvFile(InputStream stream)
         throws TransactionParsingException {
         var mapper = new CsvMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -29,12 +29,12 @@ public class TransactionParser {
             MappingIterator<Transaction> iterator = mapper
                 .readerFor(Transaction.class)
                 .with(schema)
-                .readValues(filePath.toFile());
+                .readValues(stream);
         ) {
             return iterator.readAll();
         } catch (IOException e) {
             throw new TransactionParsingException(
-                "Failed to parse transactions from: " + filePath,
+                "Failed to parse transactions from file",
                 e
             );
         }

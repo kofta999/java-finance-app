@@ -3,17 +3,21 @@ package com.kofta.app;
 import com.kofta.app.finance.FinanceService;
 import com.kofta.app.transaction.TransactionParser;
 import com.kofta.app.ui.FinanceConsole;
-import java.nio.file.Paths;
+import java.io.IOException;
 
 public class App {
 
     public static void main(String[] args) {
         try {
-            var filePath = Paths.get(
-                App.class.getClassLoader().getResource("input.csv").toURI()
+            var stream = App.class.getClassLoader().getResourceAsStream(
+                "input.csv"
             );
 
-            var transactions = TransactionParser.fromCsvFile(filePath);
+            if (stream == null) {
+                throw new IOException("File not found in classpath");
+            }
+
+            var transactions = TransactionParser.fromCsvFile(stream);
             var financeConsole = new FinanceConsole(
                 new FinanceService(),
                 transactions

@@ -77,18 +77,27 @@ public class FinanceConsole {
         System.out.println(result.toString());
     }
 
-    void printFilterByCategory() {
-        System.out.print("Category: ");
-        var category = Category.fromString(scanner.nextLine());
-        System.out.println();
+    private Category askForCategory() {
+        while (true) {
+            System.out.println("Enter category (or 'cancel'): ");
+            String input = scanner.nextLine().trim();
 
-        if (category.isEmpty()) {
-            System.out.println("Invalid Category.\n");
-            return;
+            if (input.equalsIgnoreCase("cancel")) return null;
+
+            var category = Category.fromString(input);
+            if (category.isPresent()) return category.get();
+
+            System.out.println("Invalid Category. Try: FOOD, RENT, etc.");
         }
+    }
+
+    void printFilterByCategory() {
+        var category = askForCategory();
+
+        if (category == null) return;
 
         String result = service
-            .filterByCategory(transactions, category.get())
+            .filterByCategory(transactions, category)
             .stream()
             .map(Transaction::toString)
             .collect(Collectors.joining("\n"));

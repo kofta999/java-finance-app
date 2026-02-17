@@ -13,6 +13,10 @@ public class CsvTransactionParser implements TransactionParser {
 
     @Override
     public List<ParsedTransaction> from(InputStream stream) {
+        if (stream == null) {
+            throw new IllegalArgumentException("Input stream cannot be null");
+        }
+
         var mapper = new CsvMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);

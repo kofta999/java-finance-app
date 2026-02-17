@@ -32,7 +32,7 @@ public class InMemoryTransactionRepository implements TransactionRepository {
 
     @Override
     public void save(Transaction transaction) {
-        map.put(transaction.Id(), transaction);
+        map.put(transaction.id(), transaction);
     }
 
     @Override

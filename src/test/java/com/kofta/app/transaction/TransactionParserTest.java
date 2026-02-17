@@ -1,6 +1,8 @@
 package com.kofta.app.transaction;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,34 +12,41 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class TransactionParserTest {
 
     private final Path resources = Paths.get("src", "test", "resources");
+    private TransactionParser parser;
+
+    @BeforeEach
+    void setUp() {
+        parser = new CsvTransactionParser();
+    }
 
     @Test
     @DisplayName("Should parse a valid CSV file correctly")
     void testParseValidCsv() throws TransactionParsingException, IOException {
         var filePath = resources.resolve("valid-transactions.csv");
         try (InputStream inputStream = Files.newInputStream(filePath)) {
-            var transactions = TransactionParser.from(inputStream);
+            var transactions = parser.from(inputStream);
 
             var expected = List.of(
-                new Transaction(
+                new ParsedTransaction(
                     LocalDate.of(2023, 1, 15),
                     "Groceries",
                     BigDecimal.valueOf(50.0),
                     Category.FOOD
                 ),
-                new Transaction(
+                new ParsedTransaction(
                     LocalDate.of(2023, 1, 16),
                     "New shirt",
                     BigDecimal.valueOf(-25.5),
                     Category.SHOPPING
                 ),
-                new Transaction(
+                new ParsedTransaction(
                     LocalDate.of(2023, 1, 17),
                     "Monthly Salary",
                     BigDecimal.valueOf(2500.0),
@@ -55,8 +64,9 @@ class TransactionParserTest {
         var filePath = resources.resolve("valid-transactions.csv");
         InputStream inputStream = Files.newInputStream(filePath);
         inputStream.close();
+        // The read operation on a closed stream will throw an IOException, which our parser wraps
         assertThrows(TransactionParsingException.class, () ->
-            TransactionParser.from(inputStream)
+            parser.from(inputStream)
         );
     }
 
@@ -66,7 +76,7 @@ class TransactionParserTest {
         var filePath = resources.resolve("malformed-transactions.csv");
         try (InputStream inputStream = Files.newInputStream(filePath)) {
             assertThrows(TransactionParsingException.class, () ->
-                TransactionParser.from(inputStream)
+                parser.from(inputStream)
             );
         }
     }
@@ -76,7 +86,7 @@ class TransactionParserTest {
     void testParseEmptyCsv() throws TransactionParsingException, IOException {
         var filePath = resources.resolve("empty.csv");
         try (InputStream inputStream = Files.newInputStream(filePath)) {
-            var transactions = TransactionParser.from(inputStream);
+            var transactions = parser.from(inputStream);
             assertTrue(transactions.isEmpty());
         }
     }
@@ -87,7 +97,7 @@ class TransactionParserTest {
         throws TransactionParsingException, IOException {
         var filePath = resources.resolve("only-headers.csv");
         try (InputStream inputStream = Files.newInputStream(filePath)) {
-            var transactions = TransactionParser.from(inputStream);
+            var transactions = parser.from(inputStream);
             assertTrue(transactions.isEmpty());
         }
     }
@@ -95,8 +105,6 @@ class TransactionParserTest {
     @Test
     @DisplayName("Should throw an exception for a null input stream")
     void testParseWithNullInputStream() {
-        assertThrows(IllegalArgumentException.class, () ->
-            TransactionParser.from(null)
-        );
+        assertThrows(IllegalArgumentException.class, () -> parser.from(null));
     }
 }

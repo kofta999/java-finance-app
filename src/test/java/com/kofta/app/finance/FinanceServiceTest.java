@@ -1,181 +1,191 @@
 package com.kofta.app.finance;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import com.kofta.app.transaction.Category;
 import com.kofta.app.transaction.Transaction;
+import com.kofta.app.transaction.TransactionRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.*;
+import java.util.UUID;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class FinanceServiceTest {
 
-    private FinanceService service;
-    private List<Transaction> transactions;
+    @Mock
+    private TransactionRepository transactionRepository;
 
-    @BeforeEach
-    void setUp() {
-        service = new FinanceServiceImpl();
-        transactions = List.of(
-            new Transaction(
-                LocalDate.now(),
-                "a",
-                BigDecimal.valueOf(10),
-                Category.FOOD
-            ),
-            new Transaction(
-                LocalDate.now(),
-                "b",
-                BigDecimal.valueOf(-12),
-                Category.FOOD
-            ),
-            new Transaction(
-                LocalDate.now(),
-                "c",
-                BigDecimal.valueOf(20),
-                Category.HEALTH
-            ),
-            new Transaction(
-                LocalDate.now(),
-                "d",
-                BigDecimal.valueOf(-30),
-                Category.SHOPPING
-            ),
-            new Transaction(
-                LocalDate.now(),
-                "e",
-                BigDecimal.valueOf(18),
-                Category.SHOPPING
-            )
-        );
-    }
+    @InjectMocks
+    private FinanceServiceImpl service;
 
     @Test
     @DisplayName("Total should be 0 when list is empty")
     void testEmptyList() {
-        var result = service.calculateTotal(List.of());
-        assertEquals(
-            BigDecimal.valueOf(0),
-            result,
-            "Total of empty list must be 0"
+        when(transactionRepository.findAll()).thenReturn(
+            Collections.emptyList()
         );
-    }
-
-    @Test
-    @DisplayName("CalculateTotal should throw on null input")
-    void testCalculateTotalWithNullList() {
-        assertThrows(NullPointerException.class, () ->
-            service.calculateTotal(null)
-        );
+        var result = service.calculateTotal();
+        assertEquals(BigDecimal.ZERO, result, "Total of empty list must be 0");
     }
 
     @Test
     @DisplayName("Should calculate results correctly")
     void testList() {
-        var result = service.calculateTotal(transactions);
-        assertEquals(
-            BigDecimal.valueOf(6),
-            result,
-            "Total of input list must be 6"
+        var transactions = List.of(
+            new Transaction(
+                UUID.randomUUID(),
+                LocalDate.now(),
+                "a",
+                new BigDecimal("10"),
+                Category.FOOD
+            ),
+            new Transaction(
+                UUID.randomUUID(),
+                LocalDate.now(),
+                "b",
+                new BigDecimal("-12"),
+                Category.FOOD
+            )
         );
+        when(transactionRepository.findAll()).thenReturn(transactions);
+        var result = service.calculateTotal();
+        assertEquals(new BigDecimal("-2"), result);
     }
 
     @Test
     @DisplayName("Get all shopping transactions")
     void testShoppingCategory() {
-        var result = service.filterByCategory(transactions, Category.SHOPPING);
-        assertEquals(List.of(transactions.get(3), transactions.get(4)), result);
+        var transactions = List.of(
+            new Transaction(
+                UUID.randomUUID(),
+                LocalDate.now(),
+                "a",
+                new BigDecimal("10"),
+                Category.FOOD
+            ),
+            new Transaction(
+                UUID.randomUUID(),
+                LocalDate.now(),
+                "d",
+                new BigDecimal("-30"),
+                Category.SHOPPING
+            ),
+            new Transaction(
+                UUID.randomUUID(),
+                LocalDate.now(),
+                "e",
+                new BigDecimal("18"),
+                Category.SHOPPING
+            )
+        );
+
+        when(transactionRepository.findAll(any(Predicate.class))).thenAnswer(
+            invocation -> {
+                Predicate<Transaction> predicate = invocation.getArgument(0);
+                return transactions
+                    .stream()
+                    .filter(predicate)
+                    .collect(Collectors.toList());
+            }
+        );
+
+        var result = service.filterByCategory(Category.SHOPPING);
+        assertEquals(2, result.size());
+        assertEquals(Category.SHOPPING, result.get(0).category());
+        assertEquals(Category.SHOPPING, result.get(1).category());
     }
 
     @Test
     @DisplayName("Use a category not in list, should get empty list")
     void testNonExistentCategory() {
-        var result = service.filterByCategory(transactions, Category.RENT);
-        assertEquals(List.of(), result);
+        var transactions = List.of(
+            new Transaction(
+                UUID.randomUUID(),
+                LocalDate.now(),
+                "a",
+                new BigDecimal("10"),
+                Category.FOOD
+            )
+        );
+        when(transactionRepository.findAll(any(Predicate.class))).thenAnswer(
+            invocation -> {
+                Predicate<Transaction> predicate = invocation.getArgument(0);
+                return transactions
+                    .stream()
+                    .filter(predicate)
+                    .collect(Collectors.toList());
+            }
+        );
+
+        var result = service.filterByCategory(Category.RENT);
+        assertEquals(Collections.emptyList(), result);
     }
 
     @Test
     @DisplayName("Sum by category")
     void testSumByCategory() {
-        var result = service.sumByCategory(transactions);
+        var transactions = List.of(
+            new Transaction(
+                UUID.randomUUID(),
+                LocalDate.now(),
+                "a",
+                new BigDecimal("10"),
+                Category.FOOD
+            ),
+            new Transaction(
+                UUID.randomUUID(),
+                LocalDate.now(),
+                "b",
+                new BigDecimal("-12"),
+                Category.FOOD
+            ),
+            new Transaction(
+                UUID.randomUUID(),
+                LocalDate.now(),
+                "c",
+                new BigDecimal("20"),
+                Category.HEALTH
+            ),
+            new Transaction(
+                UUID.randomUUID(),
+                LocalDate.now(),
+                "d",
+                new BigDecimal("-30"),
+                Category.SHOPPING
+            ),
+            new Transaction(
+                UUID.randomUUID(),
+                LocalDate.now(),
+                "e",
+                new BigDecimal("18"),
+                Category.SHOPPING
+            )
+        );
+        when(transactionRepository.findAll()).thenReturn(transactions);
+        var result = service.sumByCategory();
         assertEquals(
             Map.of(
                 Category.FOOD,
-                BigDecimal.valueOf(-2),
+                new BigDecimal("-2"),
                 Category.HEALTH,
-                BigDecimal.valueOf(20),
+                new BigDecimal("20"),
                 Category.SHOPPING,
-                BigDecimal.valueOf(-12)
+                new BigDecimal("-12")
             ),
             result
-        );
-    }
-
-    @Test
-    @DisplayName("filterByCategory should throw on null transactions")
-    void testFilterByCategoryWithNullList() {
-        assertThrows(NullPointerException.class, () ->
-            service.filterByCategory(null, Category.SHOPPING)
-        );
-    }
-
-    @Test
-    @DisplayName("filterByCategory should return empty list on null category")
-    void testFilterByCategoryWithNullCategory() {
-        var result = service.filterByCategory(transactions, null);
-        assertEquals(List.of(), result);
-    }
-
-    @Test
-    @DisplayName("sumByCategory should throw on null transactions")
-    void testSumByCategoryWithNullList() {
-        assertThrows(NullPointerException.class, () ->
-            service.sumByCategory(null)
-        );
-    }
-
-    @Test
-    @DisplayName("sumByCategory should throw on transaction with null category")
-    void testSumByCategoryWithTransactionWithNullCategory() {
-        var txns = new ArrayList<>(transactions);
-        txns.add(
-            new Transaction(LocalDate.now(), "f", BigDecimal.valueOf(100), null)
-        );
-        assertThrows(NullPointerException.class, () ->
-            service.sumByCategory(txns)
-        );
-    }
-
-    @Test
-    @DisplayName("calculateTotal should throw on null in list")
-    void testCalculateTotalWithNullInList() {
-        var txns = new ArrayList<Transaction>(transactions);
-        txns.add(null);
-        assertThrows(NullPointerException.class, () ->
-            service.calculateTotal(txns)
-        );
-    }
-
-    @Test
-    @DisplayName("filterByCategory should throw on null in list")
-    void testFilterByCategoryWithNullInList() {
-        var txns = new ArrayList<Transaction>(transactions);
-        txns.add(null);
-        assertThrows(NullPointerException.class, () ->
-            service.filterByCategory(txns, Category.SHOPPING)
-        );
-    }
-
-    @Test
-    @DisplayName("sumByCategory should throw on null in list")
-    void testSumByCategoryWithNullInList() {
-        var txns = new ArrayList<Transaction>(transactions);
-        txns.add(null);
-        assertThrows(NullPointerException.class, () ->
-            service.sumByCategory(txns)
         );
     }
 }

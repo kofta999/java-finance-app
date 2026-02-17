@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,19 +28,19 @@ class TransactionParserTest {
                 new Transaction(
                     LocalDate.of(2023, 1, 15),
                     "Groceries",
-                    50.0,
+                    BigDecimal.valueOf(50.0),
                     Category.FOOD
                 ),
                 new Transaction(
                     LocalDate.of(2023, 1, 16),
                     "New shirt",
-                    -25.5,
+                    BigDecimal.valueOf(-25.5),
                     Category.SHOPPING
                 ),
                 new Transaction(
                     LocalDate.of(2023, 1, 17),
                     "Monthly Salary",
-                    2500.0,
+                    BigDecimal.valueOf(2500.0),
                     Category.SALARY
                 )
             );

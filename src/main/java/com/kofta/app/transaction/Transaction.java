@@ -1,11 +1,12 @@
 package com.kofta.app.transaction;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record Transaction(
     LocalDate date,
     String description,
-    double amount,
+    BigDecimal amount,
     Category category
 ) {
     @Override

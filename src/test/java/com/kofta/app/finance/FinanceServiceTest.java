@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.kofta.app.transaction.Category;
 import com.kofta.app.transaction.Transaction;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +20,36 @@ class FinanceServiceTest {
     void setUp() {
         service = new FinanceService();
         transactions = List.of(
-            new Transaction(LocalDate.now(), "a", 10, Category.FOOD),
-            new Transaction(LocalDate.now(), "b", -12, Category.FOOD),
-            new Transaction(LocalDate.now(), "c", 20, Category.HEALTH),
-            new Transaction(LocalDate.now(), "d", -30, Category.SHOPPING),
-            new Transaction(LocalDate.now(), "e", 18, Category.SHOPPING)
+            new Transaction(
+                LocalDate.now(),
+                "a",
+                BigDecimal.valueOf(10),
+                Category.FOOD
+            ),
+            new Transaction(
+                LocalDate.now(),
+                "b",
+                BigDecimal.valueOf(-12),
+                Category.FOOD
+            ),
+            new Transaction(
+                LocalDate.now(),
+                "c",
+                BigDecimal.valueOf(20),
+                Category.HEALTH
+            ),
+            new Transaction(
+                LocalDate.now(),
+                "d",
+                BigDecimal.valueOf(-30),
+                Category.SHOPPING
+            ),
+            new Transaction(
+                LocalDate.now(),
+                "e",
+                BigDecimal.valueOf(18),
+                Category.SHOPPING
+            )
         );
     }
 
@@ -31,7 +57,11 @@ class FinanceServiceTest {
     @DisplayName("Total should be 0 when list is empty")
     void testEmptyList() {
         var result = service.calculateTotal(List.of());
-        assertEquals(0.0, result, "Total of empty list must be 0");
+        assertEquals(
+            BigDecimal.valueOf(0),
+            result,
+            "Total of empty list must be 0"
+        );
     }
 
     @Test
@@ -46,7 +76,11 @@ class FinanceServiceTest {
     @DisplayName("Should calculate results correctly")
     void testList() {
         var result = service.calculateTotal(transactions);
-        assertEquals(6.0, result, "Total of input list must be 6");
+        assertEquals(
+            BigDecimal.valueOf(6),
+            result,
+            "Total of input list must be 6"
+        );
     }
 
     @Test
@@ -70,11 +104,11 @@ class FinanceServiceTest {
         assertEquals(
             Map.of(
                 Category.FOOD,
-                -2.0,
+                BigDecimal.valueOf(-2),
                 Category.HEALTH,
-                20.0,
+                BigDecimal.valueOf(20),
                 Category.SHOPPING,
-                -12.0
+                BigDecimal.valueOf(-12)
             ),
             result
         );
@@ -107,7 +141,9 @@ class FinanceServiceTest {
     @DisplayName("sumByCategory should throw on transaction with null category")
     void testSumByCategoryWithTransactionWithNullCategory() {
         var txns = new ArrayList<>(transactions);
-        txns.add(new Transaction(LocalDate.now(), "f", 100, null));
+        txns.add(
+            new Transaction(LocalDate.now(), "f", BigDecimal.valueOf(100), null)
+        );
         assertThrows(NullPointerException.class, () ->
             service.sumByCategory(txns)
         );

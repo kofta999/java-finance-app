@@ -22,7 +22,7 @@ class TransactionParserTest {
     void testParseValidCsv() throws TransactionParsingException, IOException {
         var filePath = resources.resolve("valid-transactions.csv");
         try (InputStream inputStream = Files.newInputStream(filePath)) {
-            var transactions = TransactionParser.fromCsvFile(inputStream);
+            var transactions = TransactionParser.from(inputStream);
 
             var expected = List.of(
                 new Transaction(
@@ -56,7 +56,7 @@ class TransactionParserTest {
         InputStream inputStream = Files.newInputStream(filePath);
         inputStream.close();
         assertThrows(TransactionParsingException.class, () ->
-            TransactionParser.fromCsvFile(inputStream)
+            TransactionParser.from(inputStream)
         );
     }
 
@@ -66,7 +66,7 @@ class TransactionParserTest {
         var filePath = resources.resolve("malformed-transactions.csv");
         try (InputStream inputStream = Files.newInputStream(filePath)) {
             assertThrows(TransactionParsingException.class, () ->
-                TransactionParser.fromCsvFile(inputStream)
+                TransactionParser.from(inputStream)
             );
         }
     }
@@ -76,7 +76,7 @@ class TransactionParserTest {
     void testParseEmptyCsv() throws TransactionParsingException, IOException {
         var filePath = resources.resolve("empty.csv");
         try (InputStream inputStream = Files.newInputStream(filePath)) {
-            var transactions = TransactionParser.fromCsvFile(inputStream);
+            var transactions = TransactionParser.from(inputStream);
             assertTrue(transactions.isEmpty());
         }
     }
@@ -87,7 +87,7 @@ class TransactionParserTest {
         throws TransactionParsingException, IOException {
         var filePath = resources.resolve("only-headers.csv");
         try (InputStream inputStream = Files.newInputStream(filePath)) {
-            var transactions = TransactionParser.fromCsvFile(inputStream);
+            var transactions = TransactionParser.from(inputStream);
             assertTrue(transactions.isEmpty());
         }
     }
@@ -96,7 +96,7 @@ class TransactionParserTest {
     @DisplayName("Should throw an exception for a null input stream")
     void testParseWithNullInputStream() {
         assertThrows(IllegalArgumentException.class, () ->
-            TransactionParser.fromCsvFile(null)
+            TransactionParser.from(null)
         );
     }
 }

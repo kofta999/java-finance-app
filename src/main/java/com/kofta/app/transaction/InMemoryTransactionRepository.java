@@ -11,7 +11,7 @@ public class InMemoryTransactionRepository implements TransactionRepository {
 
     private HashMap<UUID, Transaction> map;
 
-    InMemoryTransactionRepository() {
+    public InMemoryTransactionRepository() {
         this.map = new HashMap<>();
     }
 

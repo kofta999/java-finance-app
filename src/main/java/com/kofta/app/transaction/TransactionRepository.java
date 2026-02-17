@@ -6,9 +6,9 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 public interface TransactionRepository {
-    Optional<Transaction> findById(UUID id);
-    List<Transaction> findAll();
-    List<Transaction> findAll(Predicate<Transaction> predicate);
-    void save(Transaction transaction);
-    void deleteById(UUID id);
+    public Optional<Transaction> findById(UUID id);
+    public List<Transaction> findAll();
+    public List<Transaction> findAll(Predicate<Transaction> predicate);
+    public void save(Transaction transaction);
+    public void deleteById(UUID id);
 }

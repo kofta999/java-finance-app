@@ -3,22 +3,16 @@ package com.kofta.app.ui;
 import com.kofta.app.finance.FinanceService;
 import com.kofta.app.transaction.Category;
 import com.kofta.app.transaction.Transaction;
-import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class FinanceConsole {
 
     private final FinanceService service;
-    private final List<Transaction> transactions;
     private final Scanner scanner;
 
-    public FinanceConsole(
-        FinanceService service,
-        List<Transaction> transactions
-    ) {
+    public FinanceConsole(FinanceService service) {
         this.service = service;
-        this.transactions = transactions;
         this.scanner = new Scanner(System.in);
     }
 
@@ -61,13 +55,13 @@ public class FinanceConsole {
         System.out.println(
             String.format(
                 "Remaining Balance: %10.2f $\n",
-                service.calculateTotal(transactions)
+                service.calculateTotal()
             )
         );
     }
 
     void printSummaryByCategory() {
-        var summaryMap = service.sumByCategory(transactions);
+        var summaryMap = service.sumByCategory();
         var result = new StringBuilder("Summary By Category:\n");
 
         summaryMap.forEach((category, total) -> {
@@ -97,7 +91,7 @@ public class FinanceConsole {
         if (category == null) return;
 
         String result = service
-            .filterByCategory(transactions, category)
+            .filterByCategory(category)
             .stream()
             .map(Transaction::toString)
             .collect(Collectors.joining("\n"));

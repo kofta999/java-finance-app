@@ -1,6 +1,6 @@
 package com.kofta.app;
 
-import com.kofta.app.finance.FinanceService;
+import com.kofta.app.finance.FinanceServiceImpl;
 import com.kofta.app.transaction.TransactionParser;
 import com.kofta.app.ui.FinanceConsole;
 import java.io.IOException;
@@ -19,7 +19,7 @@ public class App {
 
             var transactions = TransactionParser.fromCsvFile(stream);
             var financeConsole = new FinanceConsole(
-                new FinanceService(),
+                new FinanceServiceImpl(),
                 transactions
             );
 

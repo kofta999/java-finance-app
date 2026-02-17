@@ -18,7 +18,7 @@ class FinanceServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new FinanceService();
+        service = new FinanceServiceImpl();
         transactions = List.of(
             new Transaction(
                 LocalDate.now(),

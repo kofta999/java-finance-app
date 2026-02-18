@@ -43,22 +43,28 @@ public class FinanceServiceImpl implements FinanceService {
     }
 
     @Override
-    public BigDecimal calculateTotal() {
+    public BigDecimal calculateTotal(UUID accountId) {
         return this.transactionRepository.findAll()
             .stream()
+            .filter(t -> t.accountId().equals(accountId))
             .map(Transaction::amount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     @Override
-    public List<Transaction> filterByCategory(Category category) {
-        return transactionRepository.findAll(t -> t.category() == category);
+    public List<Transaction> filterByCategory(
+        UUID accountId,
+        Category category
+    ) {
+        return transactionRepository.findAll(
+            t -> t.category() == category && t.accountId().equals(accountId)
+        );
     }
 
     @Override
-    public Map<Category, BigDecimal> sumByCategory() {
+    public Map<Category, BigDecimal> sumByCategory(UUID accountId) {
         return transactionRepository
-            .findAll()
+            .findAll(t -> t.accountId().equals(accountId))
             .stream()
             .collect(
                 Collectors.groupingBy(

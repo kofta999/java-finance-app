@@ -2,6 +2,7 @@ package com.kofta.app;
 
 import com.kofta.app.account.Account;
 import com.kofta.app.account.AccountRepository;
+import com.kofta.app.account.AccountServiceImpl;
 import com.kofta.app.account.InMemoryAccountRepository;
 import com.kofta.app.finance.FinanceServiceImpl;
 import com.kofta.app.transaction.CsvTransactionParser;
@@ -10,7 +11,7 @@ import com.kofta.app.ui.FinanceConsole;
 import com.kofta.app.user.InMemoryUserRepository;
 import com.kofta.app.user.User;
 import com.kofta.app.user.UserRepository;
-import com.kofta.app.user.UserService;
+import com.kofta.app.user.UserServiceImpl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -73,14 +74,16 @@ public class App {
                 transactionRepository,
                 transactionParser
             );
-            var userService = new UserService(userRepository);
+            var userService = new UserServiceImpl(userRepository);
+            var accountService = new AccountServiceImpl(accountRepository);
 
             var accountId = generateSeed(userRepository, accountRepository);
             financeService.initializeFromCsv(stream, accountId);
 
             var financeConsole = new FinanceConsole(
                 financeService,
-                userService
+                userService,
+                accountService
             );
 
             financeConsole.start();

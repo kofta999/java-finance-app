@@ -1,5 +1,7 @@
 package com.kofta.app.ui;
 
+import com.kofta.app.account.Account;
+import com.kofta.app.account.AccountService;
 import com.kofta.app.finance.FinanceService;
 import com.kofta.app.transaction.Category;
 import com.kofta.app.transaction.Transaction;
@@ -13,20 +15,80 @@ public class FinanceConsole {
 
     private final FinanceService financeService;
     private final UserService userService;
+    private final AccountService accountService;
     private final Scanner scanner;
     private User currentUser;
+    private Account currentAccount;
 
     public FinanceConsole(
         FinanceService financeService,
-        UserService userService
+        UserService userService,
+        AccountService accountService
     ) {
         this.financeService = financeService;
         this.userService = userService;
+        this.accountService = accountService;
         this.scanner = new Scanner(System.in);
         this.currentUser = null;
+        this.currentAccount = null;
     }
 
     public void start() {
+        selectUser();
+        selectAccount();
+
+        mainLoop();
+
+        scanner.close();
+        System.out.println("Exiting...");
+    }
+
+    void mainLoop() {
+        boolean isRunning = true;
+        while (isRunning) {
+            printMenu();
+
+            System.out.print("Select a choice: ");
+            String choice = scanner.nextLine();
+            System.out.println();
+
+            switch (choice) {
+                case "1" -> printRemainingBalance();
+                case "2" -> printSummaryByCategory();
+                case "3" -> printFilterByCategory();
+                case "4" -> selectAccount();
+                case "5" -> {
+                    selectUser();
+                    selectAccount();
+                }
+                case "6" -> isRunning = false;
+                default -> System.out.println("Invalid Choice");
+            }
+        }
+    }
+
+    void selectAccount() {
+        boolean isAccountSelectionRunning = true;
+        var accountList = accountService.findByUserId(currentUser.getId());
+
+        while (isAccountSelectionRunning) {
+            printAccountSelectionMenu(accountList);
+
+            System.out.print("Select an Account: ");
+            String choice = scanner.nextLine();
+            System.out.println();
+
+            try {
+                int accountIndex = Integer.parseInt(choice);
+                this.currentAccount = accountList.get(accountIndex - 1);
+                isAccountSelectionRunning = false;
+            } catch (Exception e) {
+                System.out.println("Invalid Account, try again.");
+            }
+        }
+    }
+
+    void selectUser() {
         boolean isUserSelectionRunning = true;
         var userList = userService.findAll();
 
@@ -45,26 +107,6 @@ public class FinanceConsole {
                 System.out.println("Invalid User, try again.");
             }
         }
-
-        boolean isRunning = true;
-        while (isRunning) {
-            printMenu();
-
-            System.out.print("Select a choice: ");
-            String choice = scanner.nextLine();
-            System.out.println();
-
-            switch (choice) {
-                case "1" -> printRemainingBalance();
-                case "2" -> printSummaryByCategory();
-                case "3" -> printFilterByCategory();
-                case "5" -> isRunning = false;
-                default -> System.out.println("Invalid Choice");
-            }
-        }
-
-        scanner.close();
-        System.out.println("Exiting...");
     }
 
     void printUserSelectionMenu(List<User> userList) {
@@ -92,21 +134,48 @@ public class FinanceConsole {
         System.out.println(res);
     }
 
+    void printAccountSelectionMenu(List<Account> accountList) {
+        var res = new StringBuilder();
+        res.append(
+            """
+            --- Finance Manager ---
+            --- Select Account ----
+            """
+        );
+
+        for (int i = 0; i < accountList.size(); i++) {
+            res.append(
+                String.format("%d. %s\n", i + 1, accountList.get(i).getName())
+            );
+        }
+
+        res.append(
+            """
+            -----------------------
+
+            """
+        );
+
+        System.out.println(res);
+    }
+
     void printMenu() {
         System.out.println(
             String.format(
                 """
                 --- Finance Manager ---
-                --- Welcome %s
+                --- Welcome %s, account: %s
 
                 1. View Remaining Balance
                 2. Show Summary (by category)
                 3. Filter by category
                 4. Switch account
-                5. Exit
+                5. Switch user
+                6. Exit
                 -----------------------
                 """,
-                currentUser.getName()
+                currentUser.getName(),
+                currentAccount.getName()
             )
         );
     }
@@ -115,13 +184,13 @@ public class FinanceConsole {
         System.out.println(
             String.format(
                 "Remaining Balance: %10.2f $\n",
-                financeService.calculateTotal()
+                financeService.calculateTotal(currentAccount.getId())
             )
         );
     }
 
     void printSummaryByCategory() {
-        var summaryMap = financeService.sumByCategory();
+        var summaryMap = financeService.sumByCategory(currentAccount.getId());
         var result = new StringBuilder("Summary By Category:\n");
 
         summaryMap.forEach((category, total) -> {
@@ -151,7 +220,7 @@ public class FinanceConsole {
         if (category == null) return;
 
         String result = financeService
-            .filterByCategory(category)
+            .filterByCategory(currentAccount.getId(), category)
             .stream()
             .map(Transaction::toString)
             .collect(Collectors.joining("\n"));

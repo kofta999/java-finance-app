@@ -1,5 +1,6 @@
 package com.kofta.app.account;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class Account {
@@ -46,5 +47,15 @@ public class Account {
 
     public void setUserId(UUID userId) {
         this.userId = userId;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Account a && Objects.equals(a.getId(), this.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.id);
     }
 }

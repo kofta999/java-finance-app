@@ -50,14 +50,16 @@ class FinanceServiceTest {
                 LocalDate.now(),
                 "a",
                 new BigDecimal("10"),
-                Category.FOOD
+                Category.FOOD,
+                UUID.randomUUID()
             ),
             new Transaction(
                 UUID.randomUUID(),
                 LocalDate.now(),
                 "b",
                 new BigDecimal("-12"),
-                Category.FOOD
+                Category.FOOD,
+                UUID.randomUUID()
             )
         );
         when(transactionRepository.findAll()).thenReturn(transactions);
@@ -74,21 +76,24 @@ class FinanceServiceTest {
                 LocalDate.now(),
                 "a",
                 new BigDecimal("10"),
-                Category.FOOD
+                Category.FOOD,
+                UUID.randomUUID()
             ),
             new Transaction(
                 UUID.randomUUID(),
                 LocalDate.now(),
                 "d",
                 new BigDecimal("-30"),
-                Category.SHOPPING
+                Category.SHOPPING,
+                UUID.randomUUID()
             ),
             new Transaction(
                 UUID.randomUUID(),
                 LocalDate.now(),
                 "e",
                 new BigDecimal("18"),
-                Category.SHOPPING
+                Category.SHOPPING,
+                UUID.randomUUID()
             )
         );
 
@@ -117,7 +122,8 @@ class FinanceServiceTest {
                 LocalDate.now(),
                 "a",
                 new BigDecimal("10"),
-                Category.FOOD
+                Category.FOOD,
+                UUID.randomUUID()
             )
         );
         when(transactionRepository.findAll(any(Predicate.class))).thenAnswer(
@@ -143,35 +149,40 @@ class FinanceServiceTest {
                 LocalDate.now(),
                 "a",
                 new BigDecimal("10"),
-                Category.FOOD
+                Category.FOOD,
+                UUID.randomUUID()
             ),
             new Transaction(
                 UUID.randomUUID(),
                 LocalDate.now(),
                 "b",
                 new BigDecimal("-12"),
-                Category.FOOD
+                Category.FOOD,
+                UUID.randomUUID()
             ),
             new Transaction(
                 UUID.randomUUID(),
                 LocalDate.now(),
                 "c",
                 new BigDecimal("20"),
-                Category.HEALTH
+                Category.HEALTH,
+                UUID.randomUUID()
             ),
             new Transaction(
                 UUID.randomUUID(),
                 LocalDate.now(),
                 "d",
                 new BigDecimal("-30"),
-                Category.SHOPPING
+                Category.SHOPPING,
+                UUID.randomUUID()
             ),
             new Transaction(
                 UUID.randomUUID(),
                 LocalDate.now(),
                 "e",
                 new BigDecimal("18"),
-                Category.SHOPPING
+                Category.SHOPPING,
+                UUID.randomUUID()
             )
         );
         when(transactionRepository.findAll()).thenReturn(transactions);

@@ -24,14 +24,16 @@ class InMemoryTransactionRepositoryTest {
             LocalDate.now(),
             "transaction 1",
             BigDecimal.TEN,
-            Category.FOOD
+            Category.FOOD,
+            UUID.randomUUID()
         );
         transaction2 = new Transaction(
             UUID.randomUUID(),
             LocalDate.now(),
             "transaction 2",
             BigDecimal.ONE,
-            Category.SHOPPING
+            Category.SHOPPING,
+            UUID.randomUUID()
         );
         repository.save(transaction1);
         repository.save(transaction2);
@@ -70,7 +72,9 @@ class InMemoryTransactionRepositoryTest {
     }
 
     @Test
-    @DisplayName("Should return empty list when no transactions match predicate")
+    @DisplayName(
+        "Should return empty list when no transactions match predicate"
+    )
     void testFindByPredicateNotFound() {
         var result = repository.findAll(t -> t.category() == Category.HEALTH);
         assertTrue(result.isEmpty());

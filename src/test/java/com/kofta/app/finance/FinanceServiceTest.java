@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,13 +32,20 @@ class FinanceServiceTest {
     @InjectMocks
     private FinanceServiceImpl service;
 
+    private UUID accountId;
+
+    @BeforeEach
+    void setUp() {
+        accountId = UUID.randomUUID();
+    }
+
     @Test
     @DisplayName("Total should be 0 when list is empty")
     void testEmptyList() {
         when(transactionRepository.findAll()).thenReturn(
             Collections.emptyList()
         );
-        var result = service.calculateTotal();
+        var result = service.calculateTotal(accountId);
         assertEquals(BigDecimal.ZERO, result, "Total of empty list must be 0");
     }
 
@@ -51,7 +59,7 @@ class FinanceServiceTest {
                 "a",
                 new BigDecimal("10"),
                 Category.FOOD,
-                UUID.randomUUID()
+                accountId
             ),
             new Transaction(
                 UUID.randomUUID(),
@@ -59,11 +67,11 @@ class FinanceServiceTest {
                 "b",
                 new BigDecimal("-12"),
                 Category.FOOD,
-                UUID.randomUUID()
+                accountId
             )
         );
         when(transactionRepository.findAll()).thenReturn(transactions);
-        var result = service.calculateTotal();
+        var result = service.calculateTotal(accountId);
         assertEquals(new BigDecimal("-2"), result);
     }
 
@@ -77,7 +85,7 @@ class FinanceServiceTest {
                 "a",
                 new BigDecimal("10"),
                 Category.FOOD,
-                UUID.randomUUID()
+                accountId
             ),
             new Transaction(
                 UUID.randomUUID(),
@@ -85,7 +93,7 @@ class FinanceServiceTest {
                 "d",
                 new BigDecimal("-30"),
                 Category.SHOPPING,
-                UUID.randomUUID()
+                accountId
             ),
             new Transaction(
                 UUID.randomUUID(),
@@ -93,7 +101,7 @@ class FinanceServiceTest {
                 "e",
                 new BigDecimal("18"),
                 Category.SHOPPING,
-                UUID.randomUUID()
+                accountId
             )
         );
 
@@ -107,7 +115,7 @@ class FinanceServiceTest {
             }
         );
 
-        var result = service.filterByCategory(Category.SHOPPING);
+        var result = service.filterByCategory(accountId, Category.SHOPPING);
         assertEquals(2, result.size());
         assertEquals(Category.SHOPPING, result.get(0).category());
         assertEquals(Category.SHOPPING, result.get(1).category());
@@ -123,7 +131,7 @@ class FinanceServiceTest {
                 "a",
                 new BigDecimal("10"),
                 Category.FOOD,
-                UUID.randomUUID()
+                accountId
             )
         );
         when(transactionRepository.findAll(any(Predicate.class))).thenAnswer(
@@ -136,7 +144,7 @@ class FinanceServiceTest {
             }
         );
 
-        var result = service.filterByCategory(Category.RENT);
+        var result = service.filterByCategory(accountId, Category.RENT);
         assertEquals(Collections.emptyList(), result);
     }
 
@@ -150,7 +158,7 @@ class FinanceServiceTest {
                 "a",
                 new BigDecimal("10"),
                 Category.FOOD,
-                UUID.randomUUID()
+                accountId
             ),
             new Transaction(
                 UUID.randomUUID(),
@@ -158,7 +166,7 @@ class FinanceServiceTest {
                 "b",
                 new BigDecimal("-12"),
                 Category.FOOD,
-                UUID.randomUUID()
+                accountId
             ),
             new Transaction(
                 UUID.randomUUID(),
@@ -166,7 +174,7 @@ class FinanceServiceTest {
                 "c",
                 new BigDecimal("20"),
                 Category.HEALTH,
-                UUID.randomUUID()
+                accountId
             ),
             new Transaction(
                 UUID.randomUUID(),
@@ -174,7 +182,7 @@ class FinanceServiceTest {
                 "d",
                 new BigDecimal("-30"),
                 Category.SHOPPING,
-                UUID.randomUUID()
+                accountId
             ),
             new Transaction(
                 UUID.randomUUID(),
@@ -182,11 +190,19 @@ class FinanceServiceTest {
                 "e",
                 new BigDecimal("18"),
                 Category.SHOPPING,
-                UUID.randomUUID()
+                accountId
             )
         );
-        when(transactionRepository.findAll()).thenReturn(transactions);
-        var result = service.sumByCategory();
+        when(transactionRepository.findAll(any(Predicate.class))).thenAnswer(
+            invocation -> {
+                Predicate<Transaction> predicate = invocation.getArgument(0);
+                return transactions
+                    .stream()
+                    .filter(predicate)
+                    .collect(Collectors.toList());
+            }
+        );
+        var result = service.sumByCategory(accountId);
         assertEquals(
             Map.of(
                 Category.FOOD,

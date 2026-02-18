@@ -42,17 +42,21 @@ class CsvTransactionParserTest {
             "date,description,amount,category\n" + "2024-01-01,test,10.5";
         InputStream inputStream = new ByteArrayInputStream(content.getBytes());
         var result = parser.from(inputStream);
-        assertEquals(0, result.size());
+        assertEquals(1, result.size());
+        var transaction = result.get(0);
+        assertEquals(LocalDate.of(2024, 1, 1), transaction.date());
+        assertEquals("test", transaction.description());
+        assertEquals(new BigDecimal("10.5"), transaction.amount());
+        assertEquals(null, transaction.category());
     }
 
     @Test
-    @DisplayName("Should throw exception for empty CSV")
+    @DisplayName("Should return an empty list for empty CSV")
     void testParseEmpty() {
         var content = "";
         InputStream inputStream = new ByteArrayInputStream(content.getBytes());
-        assertThrows(IllegalArgumentException.class, () ->
-            parser.from(inputStream)
-        );
+        var result = parser.from(inputStream);
+        assertEquals(0, result.size());
     }
 
     @Test

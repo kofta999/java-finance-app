@@ -25,7 +25,7 @@ public class FinanceServiceImpl implements FinanceService {
     }
 
     @Override
-    public void initializeFromCsv(InputStream stream) {
+    public void initializeFromCsv(InputStream stream, UUID accountId) {
         transactionParser
             .from(stream)
             .forEach(pt -> {
@@ -34,7 +34,8 @@ public class FinanceServiceImpl implements FinanceService {
                     pt.date(),
                     pt.description(),
                     pt.amount(),
-                    pt.category()
+                    pt.category(),
+                    accountId
                 );
 
                 transactionRepository.save(t);

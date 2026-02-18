@@ -9,7 +9,8 @@ public record Transaction(
     LocalDate date,
     String description,
     BigDecimal amount,
-    Category category
+    Category category,
+    UUID accountId
 ) {
     @Override
     public String toString() {

@@ -3,20 +3,49 @@ package com.kofta.app.ui;
 import com.kofta.app.finance.FinanceService;
 import com.kofta.app.transaction.Category;
 import com.kofta.app.transaction.Transaction;
+import com.kofta.app.user.User;
+import com.kofta.app.user.UserService;
+import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class FinanceConsole {
 
-    private final FinanceService service;
+    private final FinanceService financeService;
+    private final UserService userService;
     private final Scanner scanner;
+    private User currentUser;
 
-    public FinanceConsole(FinanceService service) {
-        this.service = service;
+    public FinanceConsole(
+        FinanceService financeService,
+        UserService userService
+    ) {
+        this.financeService = financeService;
+        this.userService = userService;
         this.scanner = new Scanner(System.in);
+        this.currentUser = null;
     }
 
     public void start() {
+        boolean isUserSelectionRunning = true;
+        var userList = userService.findAll();
+
+        while (isUserSelectionRunning) {
+            printUserSelectionMenu(userList);
+
+            System.out.print("Select a User: ");
+            String choice = scanner.nextLine();
+            System.out.println();
+
+            try {
+                int userIndex = Integer.parseInt(choice);
+                this.currentUser = userList.get(userIndex - 1);
+                isUserSelectionRunning = false;
+            } catch (Exception e) {
+                System.out.println("Invalid User, try again.");
+            }
+        }
+
         boolean isRunning = true;
         while (isRunning) {
             printMenu();
@@ -29,7 +58,7 @@ public class FinanceConsole {
                 case "1" -> printRemainingBalance();
                 case "2" -> printSummaryByCategory();
                 case "3" -> printFilterByCategory();
-                case "4" -> isRunning = false;
+                case "5" -> isRunning = false;
                 default -> System.out.println("Invalid Choice");
             }
         }
@@ -38,16 +67,47 @@ public class FinanceConsole {
         System.out.println("Exiting...");
     }
 
-    void printMenu() {
-        System.out.println(
+    void printUserSelectionMenu(List<User> userList) {
+        var res = new StringBuilder();
+        res.append(
             """
             --- Finance Manager ---
-            1. View Remaining Balance
-            2. Show Summary (by category)
-            3. Filter by category
-            4. Exit
-            -----------------------
+            -------- Login --------
             """
+        );
+
+        for (int i = 0; i < userList.size(); i++) {
+            res.append(
+                String.format("%d. %s\n", i + 1, userList.get(i).getName())
+            );
+        }
+
+        res.append(
+            """
+            -----------------------
+
+            """
+        );
+
+        System.out.println(res);
+    }
+
+    void printMenu() {
+        System.out.println(
+            String.format(
+                """
+                --- Finance Manager ---
+                --- Welcome %s
+
+                1. View Remaining Balance
+                2. Show Summary (by category)
+                3. Filter by category
+                4. Switch account
+                5. Exit
+                -----------------------
+                """,
+                currentUser.getName()
+            )
         );
     }
 
@@ -55,13 +115,13 @@ public class FinanceConsole {
         System.out.println(
             String.format(
                 "Remaining Balance: %10.2f $\n",
-                service.calculateTotal()
+                financeService.calculateTotal()
             )
         );
     }
 
     void printSummaryByCategory() {
-        var summaryMap = service.sumByCategory();
+        var summaryMap = financeService.sumByCategory();
         var result = new StringBuilder("Summary By Category:\n");
 
         summaryMap.forEach((category, total) -> {
@@ -90,7 +150,7 @@ public class FinanceConsole {
 
         if (category == null) return;
 
-        String result = service
+        String result = financeService
             .filterByCategory(category)
             .stream()
             .map(Transaction::toString)

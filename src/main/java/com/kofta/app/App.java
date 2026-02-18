@@ -30,7 +30,7 @@ public class App {
         AccountRepository accountRepository
     ) {
         var users = generateUsers();
-        var accounts = generateAccounts(users.get(0).getId());
+        var accounts = generateAccounts(users);
 
         users.forEach(userRepository::save);
         accounts.forEach(accountRepository::save);
@@ -46,11 +46,27 @@ public class App {
         );
     }
 
-    static List<Account> generateAccounts(UUID userId) {
+    static List<Account> generateAccounts(List<User> users) {
         return List.of(
-            new Account(UUID.randomUUID(), "Account1", "USD", userId),
-            new Account(UUID.randomUUID(), "Account2", "JPY", userId),
-            new Account(UUID.randomUUID(), "Account3", "EGP", userId)
+            new Account(UUID.randomUUID(), "Main", "USD", users.get(0).getId()),
+            new Account(
+                UUID.randomUUID(),
+                "Savings",
+                "USD",
+                users.get(0).getId()
+            ),
+            new Account(
+                UUID.randomUUID(),
+                "Checking",
+                "JPY",
+                users.get(1).getId()
+            ),
+            new Account(
+                UUID.randomUUID(),
+                "Business",
+                "EGP",
+                users.get(2).getId()
+            )
         );
     }
 

@@ -10,6 +10,7 @@ import com.kofta.app.ui.FinanceConsole;
 import com.kofta.app.user.InMemoryUserRepository;
 import com.kofta.app.user.User;
 import com.kofta.app.user.UserRepository;
+import com.kofta.app.user.UserService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -72,15 +73,19 @@ public class App {
                 transactionRepository,
                 transactionParser
             );
+            var userService = new UserService(userRepository);
 
             var accountId = generateSeed(userRepository, accountRepository);
             financeService.initializeFromCsv(stream, accountId);
 
-            var financeConsole = new FinanceConsole(financeService);
+            var financeConsole = new FinanceConsole(
+                financeService,
+                userService
+            );
 
             financeConsole.start();
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            System.err.println(e);
         }
     }
 }

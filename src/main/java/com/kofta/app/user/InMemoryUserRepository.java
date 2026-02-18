@@ -1,6 +1,8 @@
 package com.kofta.app.user;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,6 +17,11 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public Optional<User> findById(UUID userId) {
         return Optional.ofNullable(map.get(userId));
+    }
+
+    @Override
+    public List<User> findAll() {
+        return new ArrayList<>(map.values());
     }
 
     @Override

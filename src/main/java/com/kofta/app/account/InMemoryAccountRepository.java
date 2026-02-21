@@ -33,7 +33,7 @@ public class InMemoryAccountRepository implements AccountRepository {
     @Override
     public Result<Void, EntityNotFoundError> save(Account account) {
         map.put(account.getId(), account);
-        return new Result.Ok<>();
+        return new Result.Ok<>(null);
     }
 
     @Override

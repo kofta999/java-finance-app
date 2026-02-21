@@ -29,6 +29,6 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public Result<Void, EntityNotFoundError> save(User user) {
         map.put(user.getId(), user);
-        return new Result.Ok<>();
+        return new Result.Ok<>(null);
     }
 }

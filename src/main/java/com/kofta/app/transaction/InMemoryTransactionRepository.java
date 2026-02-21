@@ -35,7 +35,7 @@ public class InMemoryTransactionRepository implements TransactionRepository {
     @Override
     public Result<Void, EntityNotFoundError> save(Transaction transaction) {
         map.put(transaction.id(), transaction);
-        return new Result.Ok<>();
+        return new Result.Ok<>(null);
     }
 
     @Override

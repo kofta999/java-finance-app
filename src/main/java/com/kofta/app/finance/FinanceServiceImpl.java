@@ -1,8 +1,10 @@
 package com.kofta.app.finance;
 
+import com.kofta.app.common.result.Result;
 import com.kofta.app.transaction.Category;
 import com.kofta.app.transaction.Transaction;
 import com.kofta.app.transaction.TransactionParser;
+import com.kofta.app.transaction.TransactionParsingError;
 import com.kofta.app.transaction.TransactionRepository;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -26,9 +28,8 @@ public class FinanceServiceImpl implements FinanceService {
 
     @Override
     public void initializeFromCsv(InputStream stream, UUID accountId) {
-        transactionParser
-            .from(stream)
-            .forEach(pt -> {
+        switch (transactionParser.from(stream)) {
+            case Result.Ok(var txs) -> txs.forEach(pt -> {
                 var t = new Transaction(
                     UUID.randomUUID(),
                     pt.date(),
@@ -40,6 +41,8 @@ public class FinanceServiceImpl implements FinanceService {
 
                 transactionRepository.save(t);
             });
+            case Result.Err(var e) -> throw (TransactionParsingError) e;
+        }
     }
 
     @Override

@@ -9,11 +9,9 @@ import java.util.Map;
 import java.util.UUID;
 
 public interface FinanceService {
-    public void initializeFromCsv(InputStream stream, UUID accountId);
-    public BigDecimal calculateTotal(UUID accountId);
-    public List<Transaction> filterByCategory(
-        UUID accountId,
-        Category category
-    );
-    public Map<Category, BigDecimal> sumByCategory(UUID accountId);
+    void initializeFromCsv(InputStream stream, UUID accountId);
+    List<Transaction> findAll(UUID accountId);
+    BigDecimal calculateTotal(UUID accountId);
+    List<Transaction> filterByCategory(UUID accountId, Category category);
+    Map<Category, BigDecimal> sumByCategory(UUID accountId);
 }

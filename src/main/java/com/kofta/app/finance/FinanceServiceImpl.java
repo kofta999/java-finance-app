@@ -79,4 +79,11 @@ public class FinanceServiceImpl implements FinanceService {
                 )
             );
     }
+
+    @Override
+    public List<Transaction> findAll(UUID accountId) {
+        return transactionRepository.findAll(t ->
+            t.accountId().equals(accountId)
+        );
+    }
 }

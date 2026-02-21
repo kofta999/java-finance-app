@@ -4,12 +4,12 @@ import com.kofta.app.account.Account;
 import com.kofta.app.account.AccountService;
 import com.kofta.app.finance.FinanceService;
 import com.kofta.app.transaction.Category;
-import com.kofta.app.transaction.Transaction;
 import com.kofta.app.user.User;
 import com.kofta.app.user.UserService;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 public class FinanceConsole {
 
@@ -36,7 +36,6 @@ public class FinanceConsole {
     public void start() {
         selectUser();
         selectAccount();
-
         mainLoop();
 
         scanner.close();
@@ -46,14 +45,13 @@ public class FinanceConsole {
     void mainLoop() {
         boolean isRunning = true;
         while (isRunning) {
-            printMenu();
-
+            printHeader();
             System.out.print("Select a choice: ");
             String choice = scanner.nextLine();
-            System.out.println();
 
             switch (choice) {
                 case "1" -> printRemainingBalance();
+                // case "2" -> sortAndPrintAllTransactions();
                 case "2" -> printSummaryByCategory();
                 case "3" -> printFilterByCategory();
                 case "4" -> selectAccount();
@@ -67,165 +65,102 @@ public class FinanceConsole {
         }
     }
 
+    // void sortAndPrintAllTransactions() {
+    //     // TODO
+    //     var fields = List.of("Amount", "Date", "Category");
+    // }
+
     void selectAccount() {
-        boolean isAccountSelectionRunning = true;
-        var accountList = accountService.findByUserId(currentUser.getId());
-
-        while (isAccountSelectionRunning) {
-            printAccountSelectionMenu(accountList);
-
-            System.out.print("Select an Account: ");
-            String choice = scanner.nextLine();
-            System.out.println();
-
-            try {
-                int accountIndex = Integer.parseInt(choice);
-                this.currentAccount = accountList.get(accountIndex - 1);
-                isAccountSelectionRunning = false;
-            } catch (Exception e) {
-                System.out.println("Invalid Account, try again.");
-            }
-        }
+        var accounts = accountService.findByUserId(currentUser.getId());
+        this.currentAccount = promptForSelection(
+            "Select Account: ",
+            accounts,
+            Account::getName
+        );
     }
 
     void selectUser() {
-        boolean isUserSelectionRunning = true;
-        var userList = userService.findAll();
-
-        while (isUserSelectionRunning) {
-            printUserSelectionMenu(userList);
-
-            System.out.print("Select a User: ");
-            String choice = scanner.nextLine();
-            System.out.println();
-
-            try {
-                int userIndex = Integer.parseInt(choice);
-                this.currentUser = userList.get(userIndex - 1);
-                isUserSelectionRunning = false;
-            } catch (Exception e) {
-                System.out.println("Invalid User, try again.");
-            }
-        }
+        var users = userService.findAll();
+        this.currentUser = promptForSelection(
+            "Select a User: ",
+            users,
+            User::getName
+        );
     }
 
-    void printUserSelectionMenu(List<User> userList) {
-        var res = new StringBuilder();
-        res.append(
+    void printHeader() {
+        System.out.print(
             """
             --- Finance Manager ---
-            -------- Login --------
-            """
-        );
+            --- Welcome %s, account: %s
 
-        for (int i = 0; i < userList.size(); i++) {
-            res.append(
-                String.format("%d. %s\n", i + 1, userList.get(i).getName())
-            );
-        }
-
-        res.append(
-            """
+            1. View Remaining Balance
+            2. Show Summary (by category)
+            3. Filter by category
+            4. Switch account
+            5. Switch user
+            6. Exit
             -----------------------
-
-            """
-        );
-
-        System.out.println(res);
-    }
-
-    void printAccountSelectionMenu(List<Account> accountList) {
-        var res = new StringBuilder();
-        res.append(
-            """
-            --- Finance Manager ---
-            --- Select Account ----
-            """
-        );
-
-        for (int i = 0; i < accountList.size(); i++) {
-            res.append(
-                String.format("%d. %s\n", i + 1, accountList.get(i).getName())
-            );
-        }
-
-        res.append(
-            """
-            -----------------------
-
-            """
-        );
-
-        System.out.println(res);
-    }
-
-    void printMenu() {
-        System.out.println(
-            String.format(
-                """
-                --- Finance Manager ---
-                --- Welcome %s, account: %s
-
-                1. View Remaining Balance
-                2. Show Summary (by category)
-                3. Filter by category
-                4. Switch account
-                5. Switch user
-                6. Exit
-                -----------------------
-                """,
-                currentUser.getName(),
-                currentAccount.getName()
-            )
+            """.formatted(currentUser.getName(), currentAccount.getName())
         );
     }
 
     void printRemainingBalance() {
-        System.out.println(
-            String.format(
-                "Remaining Balance: %10.2f $\n",
-                financeService.calculateTotal(currentAccount.getId())
-            )
-        );
+        var balance = financeService.calculateTotal(currentAccount.getId());
+        System.out.printf("Remaining Balance: %,.2f $%n%n", balance);
     }
 
     void printSummaryByCategory() {
-        var summaryMap = financeService.sumByCategory(currentAccount.getId());
-        var result = new StringBuilder("Summary By Category:\n");
-
-        summaryMap.forEach((category, total) -> {
-            result.append(String.format("%s: %10.2f $\n", category, total));
-        });
-
-        System.out.println(result.toString());
-    }
-
-    private Category askForCategory() {
-        while (true) {
-            System.out.println("Enter category (or 'cancel'): ");
-            String input = scanner.nextLine().trim();
-
-            if (input.equalsIgnoreCase("cancel")) return null;
-
-            var category = Category.fromString(input);
-            if (category.isPresent()) return category.get();
-
-            System.out.println("Invalid Category. Try: FOOD, RENT, etc.");
-        }
+        System.out.println("--- Summary By Category ---");
+        financeService
+            .sumByCategory(currentAccount.getId())
+            .forEach((cat, total) ->
+                System.out.printf("%-15s: %10.2f $%n", cat, total)
+            );
     }
 
     void printFilterByCategory() {
-        var category = askForCategory();
+        List<Category> categories = Arrays.asList(Category.values());
+        var selected = promptForSelection(
+            "Enter category (or 'cancel'): ",
+            categories,
+            Category::toString
+        );
 
-        if (category == null) return;
+        if (selected == null) return;
 
-        String result = financeService
-            .filterByCategory(currentAccount.getId(), category)
-            .stream()
-            .map(Transaction::toString)
-            .collect(Collectors.joining("\n"));
+        var transactions = financeService.filterByCategory(
+            currentAccount.getId(),
+            selected
+        );
 
-        System.out.println(result);
-        System.out.println();
+        if (transactions.isEmpty()) {
+            System.out.println("No transactions found for " + selected);
+        } else {
+            transactions.forEach(System.out::println);
+        }
+    }
+
+    private <T> T promptForSelection(
+        String prompt,
+        List<T> items,
+        Function<T, String> formatter
+    ) {
+        while (true) {
+            for (int i = 0; i < items.size(); i++) {
+                System.out.printf(
+                    "%d. %s%n",
+                    i + 1,
+                    formatter.apply(items.get(i))
+                );
+            }
+            System.out.print(prompt);
+            try {
+                int index = Integer.parseInt(scanner.nextLine()) - 1;
+                return items.get(index);
+            } catch (Exception e) {
+                System.out.println("Invalid selection. Please try again.");
+            }
+        }
     }
 }

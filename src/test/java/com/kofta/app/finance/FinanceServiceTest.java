@@ -1,12 +1,21 @@
 package com.kofta.app.finance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.kofta.app.common.result.Result;
 import com.kofta.app.transaction.Category;
+import com.kofta.app.transaction.ParsedTransaction;
 import com.kofta.app.transaction.Transaction;
+import com.kofta.app.transaction.TransactionParser;
+import com.kofta.app.transaction.TransactionParsingError;
 import com.kofta.app.transaction.TransactionRepository;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -29,6 +38,9 @@ class FinanceServiceTest {
     @Mock
     private TransactionRepository transactionRepository;
 
+    @Mock
+    private TransactionParser transactionParser;
+
     @InjectMocks
     private FinanceServiceImpl service;
 
@@ -37,6 +49,44 @@ class FinanceServiceTest {
     @BeforeEach
     void setUp() {
         accountId = UUID.randomUUID();
+    }
+
+    @Test
+    @DisplayName("Should initialize transactions from CSV")
+    void testInitializeFromCsv() {
+        var stream = new ByteArrayInputStream("".getBytes());
+        var parsedTransactions = List.of(
+            new ParsedTransaction(
+                LocalDate.now(),
+                "desc",
+                BigDecimal.TEN,
+                Category.FOOD
+            )
+        );
+        when(transactionParser.from(any(InputStream.class))).thenReturn(
+            new Result.Ok<>(parsedTransactions)
+        );
+
+        service.initializeFromCsv(stream, accountId);
+
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+    }
+
+    @Test
+    @DisplayName("Should throw exception on parsing error")
+    void testInitializeFromCsvError() {
+        var stream = new ByteArrayInputStream("".getBytes());
+        var error = new TransactionParsingError(
+            "Error",
+            new RuntimeException()
+        );
+        when(transactionParser.from(any(InputStream.class))).thenReturn(
+            new Result.Err<>(error)
+        );
+
+        assertThrows(TransactionParsingError.class, () ->
+            service.initializeFromCsv(stream, accountId)
+        );
     }
 
     @Test

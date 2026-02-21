@@ -25,7 +25,7 @@ class CsvTransactionParserTest {
         var content =
             "date,description,amount,category\n" + "2024-01-01,test,10.5,FOOD";
         InputStream inputStream = new ByteArrayInputStream(content.getBytes());
-        var result = parser.from(inputStream);
+        var result = parser.from(inputStream).unwrap();
         assertEquals(1, result.size());
         var transaction = result.get(0);
         assertEquals(LocalDate.of(2024, 1, 1), transaction.date());
@@ -40,7 +40,7 @@ class CsvTransactionParserTest {
         var content =
             "date,description,amount,category\n" + "2024-01-01,test,10.5";
         InputStream inputStream = new ByteArrayInputStream(content.getBytes());
-        var result = parser.from(inputStream);
+        var result = parser.from(inputStream).unwrap();
         assertEquals(1, result.size());
         var transaction = result.get(0);
         assertEquals(LocalDate.of(2024, 1, 1), transaction.date());
@@ -54,7 +54,7 @@ class CsvTransactionParserTest {
     void testParseEmpty() {
         var content = "";
         InputStream inputStream = new ByteArrayInputStream(content.getBytes());
-        var result = parser.from(inputStream);
+        var result = parser.from(inputStream).unwrap();
         assertEquals(0, result.size());
     }
 
@@ -63,7 +63,7 @@ class CsvTransactionParserTest {
     void testParseOnlyHeaders() {
         var content = "date,description,amount,category";
         InputStream inputStream = new ByteArrayInputStream(content.getBytes());
-        var result = parser.from(inputStream);
+        var result = parser.from(inputStream).unwrap();
         assertEquals(0, result.size());
     }
 }

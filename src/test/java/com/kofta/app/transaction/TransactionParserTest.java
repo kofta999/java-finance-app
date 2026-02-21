@@ -28,10 +28,10 @@ class TransactionParserTest {
 
     @Test
     @DisplayName("Should parse a valid CSV file correctly")
-    void testParseValidCsv() throws TransactionParsingException, IOException {
+    void testParseValidCsv() throws IOException {
         var filePath = resources.resolve("valid-transactions.csv");
         try (InputStream inputStream = Files.newInputStream(filePath)) {
-            var transactions = parser.from(inputStream);
+            var transactions = parser.from(inputStream).unwrap();
 
             var expected = List.of(
                 new ParsedTransaction(
@@ -65,8 +65,8 @@ class TransactionParserTest {
         InputStream inputStream = Files.newInputStream(filePath);
         inputStream.close();
         // The read operation on a closed stream will throw an IOException, which our parser wraps
-        assertThrows(TransactionParsingException.class, () ->
-            parser.from(inputStream)
+        assertThrows(TransactionParsingError.class, () ->
+            parser.from(inputStream).unwrap()
         );
     }
 
@@ -75,29 +75,28 @@ class TransactionParserTest {
     void testParseMalformedCsv() throws IOException {
         var filePath = resources.resolve("malformed-transactions.csv");
         try (InputStream inputStream = Files.newInputStream(filePath)) {
-            assertThrows(TransactionParsingException.class, () ->
-                parser.from(inputStream)
+            assertThrows(TransactionParsingError.class, () ->
+                parser.from(inputStream).unwrap()
             );
         }
     }
 
     @Test
     @DisplayName("Should return empty list for an empty CSV file")
-    void testParseEmptyCsv() throws TransactionParsingException, IOException {
+    void testParseEmptyCsv() throws IOException {
         var filePath = resources.resolve("empty.csv");
         try (InputStream inputStream = Files.newInputStream(filePath)) {
-            var transactions = parser.from(inputStream);
+            var transactions = parser.from(inputStream).unwrap();
             assertTrue(transactions.isEmpty());
         }
     }
 
     @Test
     @DisplayName("Should return empty list for a CSV with only headers")
-    void testParseCsvWithOnlyHeaders()
-        throws TransactionParsingException, IOException {
+    void testParseCsvWithOnlyHeaders() throws IOException {
         var filePath = resources.resolve("only-headers.csv");
         try (InputStream inputStream = Files.newInputStream(filePath)) {
-            var transactions = parser.from(inputStream);
+            var transactions = parser.from(inputStream).unwrap();
             assertTrue(transactions.isEmpty());
         }
     }
@@ -105,6 +104,8 @@ class TransactionParserTest {
     @Test
     @DisplayName("Should throw an exception for a null input stream")
     void testParseWithNullInputStream() {
-        assertThrows(IllegalArgumentException.class, () -> parser.from(null));
+        assertThrows(TransactionParsingError.class, () ->
+            parser.from(null).unwrap()
+        );
     }
 }

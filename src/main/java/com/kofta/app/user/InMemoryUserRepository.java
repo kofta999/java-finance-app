@@ -3,17 +3,17 @@ package com.kofta.app.user;
 import com.kofta.app.common.repository.EntityNotFoundError;
 import com.kofta.app.common.result.Result;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public class InMemoryUserRepository implements UserRepository {
 
-    private HashMap<UUID, User> map;
+    private LinkedHashMap<UUID, User> map;
 
     public InMemoryUserRepository() {
-        this.map = new HashMap<>();
+        this.map = new LinkedHashMap<>();
     }
 
     @Override

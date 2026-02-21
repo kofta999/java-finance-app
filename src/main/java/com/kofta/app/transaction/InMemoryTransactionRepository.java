@@ -1,5 +1,7 @@
 package com.kofta.app.transaction;
 
+import com.kofta.app.common.repository.EntityNotFoundError;
+import com.kofta.app.common.result.Result;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,8 +33,9 @@ public class InMemoryTransactionRepository implements TransactionRepository {
     }
 
     @Override
-    public void save(Transaction transaction) {
+    public Result<Void, EntityNotFoundError> save(Transaction transaction) {
         map.put(transaction.id(), transaction);
+        return new Result.Ok<>();
     }
 
     @Override

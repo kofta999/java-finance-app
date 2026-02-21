@@ -1,5 +1,7 @@
 package com.kofta.app.account;
 
+import com.kofta.app.common.repository.EntityNotFoundError;
+import com.kofta.app.common.result.Result;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,8 +31,9 @@ public class InMemoryAccountRepository implements AccountRepository {
     }
 
     @Override
-    public void save(Account account) {
+    public Result<Void, EntityNotFoundError> save(Account account) {
         map.put(account.getId(), account);
+        return new Result.Ok<>();
     }
 
     @Override

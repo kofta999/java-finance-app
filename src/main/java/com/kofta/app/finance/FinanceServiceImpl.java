@@ -1,12 +1,8 @@
 package com.kofta.app.finance;
 
-import com.kofta.app.common.result.Result;
 import com.kofta.app.transaction.Category;
 import com.kofta.app.transaction.Transaction;
-import com.kofta.app.transaction.TransactionParser;
-import com.kofta.app.transaction.TransactionParsingError;
 import com.kofta.app.transaction.TransactionRepository;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
@@ -17,33 +13,9 @@ import java.util.stream.Collectors;
 public class FinanceServiceImpl implements FinanceService {
 
     private TransactionRepository transactionRepository;
-    private TransactionParser transactionParser;
 
-    public FinanceServiceImpl(
-        TransactionRepository transactionRepository,
-        TransactionParser transactionParser
-    ) {
+    public FinanceServiceImpl(TransactionRepository transactionRepository) {
         this.transactionRepository = transactionRepository;
-        this.transactionParser = transactionParser;
-    }
-
-    @Override
-    public void initializeFromCsv(InputStream stream, UUID accountId) {
-        switch (transactionParser.from(stream)) {
-            case Result.Ok(var txs) -> txs.forEach(pt -> {
-                var t = new Transaction(
-                    UUID.randomUUID(),
-                    pt.date(),
-                    pt.description(),
-                    pt.amount(),
-                    pt.category(),
-                    accountId
-                );
-
-                transactionRepository.save(t);
-            });
-            case Result.Err(var e) -> throw (TransactionParsingError) e;
-        }
     }
 
     @Override

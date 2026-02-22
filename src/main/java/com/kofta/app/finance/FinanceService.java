@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface FinanceService {
     void initializeFromCsv(InputStream stream, UUID accountId);
-    List<Transaction> findAll(UUID accountId);
+    List<Transaction> sortTransactionsBy(UUID accountId, TransactionSort sort);
     BigDecimal calculateTotal(UUID accountId);
     List<Transaction> filterByCategory(UUID accountId, Category category);
     Map<Category, BigDecimal> sumByCategory(UUID accountId);

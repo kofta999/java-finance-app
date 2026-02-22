@@ -265,4 +265,69 @@ class FinanceServiceTest {
             result
         );
     }
+
+    @Test
+    @DisplayName("Sort transactions")
+    void testSortTransactions() {
+        var t1 = new Transaction(
+            UUID.randomUUID(),
+            LocalDate.of(2023, 1, 1),
+            "a",
+            new BigDecimal("100"),
+            Category.FOOD,
+            accountId
+        );
+        var t2 = new Transaction(
+            UUID.randomUUID(),
+            LocalDate.of(2023, 1, 2),
+            "b",
+            new BigDecimal("50"),
+            Category.RENT,
+            accountId
+        );
+        var t3 = new Transaction(
+            UUID.randomUUID(),
+            LocalDate.of(2023, 1, 3),
+            "c",
+            new BigDecimal("200"),
+            Category.HEALTH,
+            accountId
+        );
+
+        var transactions = List.of(t2, t3, t1); // Unsorted
+
+        when(transactionRepository.findAll(any(Predicate.class))).thenAnswer(
+            invocation -> {
+                Predicate<Transaction> predicate = invocation.getArgument(0);
+                return transactions
+                    .stream()
+                    .filter(predicate)
+                    .collect(Collectors.toList());
+            }
+        );
+
+        // Sort by Amount
+        // 50, 100, 200 -> t2, t1, t3
+        var sortedByAmount = service.sortTransactionsBy(
+            accountId,
+            TransactionSort.AMOUNT
+        );
+        assertEquals(List.of(t2, t1, t3), sortedByAmount);
+
+        // Sort by Date
+        // 2023-01-01, 2023-01-02, 2023-01-03 -> t1, t2, t3
+        var sortedByDate = service.sortTransactionsBy(
+            accountId,
+            TransactionSort.DATE
+        );
+        assertEquals(List.of(t1, t2, t3), sortedByDate);
+
+        // Sort by Category
+        // FOOD (0), HEALTH (1), RENT (2),  -> t1, t3, t2
+        var sortedByCategory = service.sortTransactionsBy(
+            accountId,
+            TransactionSort.CATEGORY
+        );
+        assertEquals(List.of(t1, t3, t2), sortedByCategory);
+    }
 }

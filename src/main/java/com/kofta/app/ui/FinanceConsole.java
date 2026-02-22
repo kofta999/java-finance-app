@@ -3,10 +3,12 @@ package com.kofta.app.ui;
 import com.kofta.app.account.Account;
 import com.kofta.app.account.AccountService;
 import com.kofta.app.finance.FinanceService;
+import com.kofta.app.finance.TransactionSort;
 import com.kofta.app.transaction.Category;
 import com.kofta.app.user.User;
 import com.kofta.app.user.UserService;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.function.Function;
@@ -51,24 +53,41 @@ public class FinanceConsole {
 
             switch (choice) {
                 case "1" -> printRemainingBalance();
-                // case "2" -> sortAndPrintAllTransactions();
-                case "2" -> printSummaryByCategory();
-                case "3" -> printFilterByCategory();
-                case "4" -> selectAccount();
-                case "5" -> {
+                case "2" -> sortTransactions();
+                case "3" -> printSummaryByCategory();
+                case "4" -> printFilterByCategory();
+                case "5" -> selectAccount();
+                case "6" -> {
                     selectUser();
                     selectAccount();
                 }
-                case "6" -> isRunning = false;
+                case "7" -> isRunning = false;
                 default -> System.out.println("Invalid Choice");
             }
         }
     }
 
-    // void sortAndPrintAllTransactions() {
-    //     // TODO
-    //     var fields = List.of("Amount", "Date", "Category");
-    // }
+    void sortTransactions() {
+        List<TransactionSort> choices = Arrays.asList(TransactionSort.values());
+        var selected = promptForSelection(
+            "Enter sort order: ",
+            choices,
+            TransactionSort::toString
+        );
+
+        if (selected == null) return;
+
+        var transactions = financeService.sortTransactionsBy(
+            currentAccount.getId(),
+            selected
+        );
+
+        if (transactions.isEmpty()) {
+            System.out.println("No transactions found");
+        } else {
+            transactions.forEach(System.out::println);
+        }
+    }
 
     void selectAccount() {
         var accounts = accountService.findByUserId(currentUser.getId());
@@ -95,11 +114,12 @@ public class FinanceConsole {
             --- Welcome %s, account: %s
 
             1. View Remaining Balance
-            2. Show Summary (by category)
-            3. Filter by category
-            4. Switch account
-            5. Switch user
-            6. Exit
+            2. Show and sort Transactions
+            3. Show Summary (by category)
+            4. Filter by category
+            5. Switch account
+            6. Switch user
+            7. Exit
             -----------------------
             """.formatted(currentUser.getName(), currentAccount.getName())
         );
@@ -163,4 +183,11 @@ public class FinanceConsole {
             }
         }
     }
+
+    // private static void clearScreen() {
+    //     // \033[H moves the cursor to the top left
+    //     // \033[2J clears the entire screen
+    //     System.out.print("\033[H\033[2J");
+    //     System.out.flush();
+    // }
 }

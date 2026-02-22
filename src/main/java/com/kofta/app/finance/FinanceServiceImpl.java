@@ -8,6 +8,7 @@ import com.kofta.app.transaction.TransactionParsingError;
 import com.kofta.app.transaction.TransactionRepository;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -81,9 +82,20 @@ public class FinanceServiceImpl implements FinanceService {
     }
 
     @Override
-    public List<Transaction> findAll(UUID accountId) {
-        return transactionRepository.findAll(t ->
-            t.accountId().equals(accountId)
-        );
+    public List<Transaction> sortTransactionsBy(
+        UUID accountId,
+        TransactionSort sort
+    ) {
+        Comparator<Transaction> comparator = switch (sort) {
+            case AMOUNT -> Comparator.comparing(Transaction::amount);
+            case DATE -> Comparator.comparing(Transaction::date);
+            case CATEGORY -> Comparator.comparing(Transaction::category);
+        };
+
+        return transactionRepository
+            .findAll(t -> t.accountId().equals(accountId))
+            .stream()
+            .sorted(comparator)
+            .toList();
     }
 }

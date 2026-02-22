@@ -3,11 +3,11 @@ package com.kofta.app.transaction;
 import java.util.Optional;
 
 public enum Category {
-    SALARY,
     FOOD,
+    HEALTH,
     RENT,
-    SHOPPING,
-    HEALTH;
+    SALARY,
+    SHOPPING;
 
     public static Optional<Category> fromString(String input) {
         try {

@@ -1,6 +1,6 @@
 package com.kofta.app.user;
 
-import com.kofta.app.common.repository.EntityNotFoundError;
+import com.kofta.app.common.repository.RepositoryException;
 import com.kofta.app.common.result.Result;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -27,7 +27,7 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public Result<Void, EntityNotFoundError> save(User user) {
+    public Result<Void, RepositoryException> save(User user) {
         map.put(user.getId(), user);
         return new Result.Ok<>(null);
     }

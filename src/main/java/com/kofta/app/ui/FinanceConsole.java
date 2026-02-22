@@ -8,7 +8,6 @@ import com.kofta.app.transaction.Category;
 import com.kofta.app.user.User;
 import com.kofta.app.user.UserService;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.function.Function;

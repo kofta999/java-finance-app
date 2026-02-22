@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface Repository<T, ID extends Serializable> {
     Optional<T> findById(ID id);
     List<T> findAll();
-    <E extends EntityNotFoundError> Result<Void, E> save(T entity);
+    Result<Void, RepositoryException> save(T entity);
 }

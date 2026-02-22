@@ -14,7 +14,7 @@ public class SqliteUserRepository implements UserRepository {
 
     private Connection connection;
 
-    SqliteUserRepository(Connection connection) {
+    public SqliteUserRepository(Connection connection) {
         this.connection = connection;
     }
 
@@ -27,7 +27,7 @@ public class SqliteUserRepository implements UserRepository {
 
     @Override
     public Optional<User> findById(UUID id) {
-        var sql = "SELECT * FROM User WHERE id = ?";
+        var sql = "SELECT * FROM users WHERE id = ?";
 
         try (var stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, id.toString());
@@ -44,7 +44,7 @@ public class SqliteUserRepository implements UserRepository {
 
     @Override
     public List<User> findAll() {
-        var sql = "SELECT * FROM User";
+        var sql = "SELECT * FROM users";
         List<User> res = new ArrayList<>();
 
         try (var stmt = connection.prepareStatement(sql)) {
@@ -61,7 +61,7 @@ public class SqliteUserRepository implements UserRepository {
 
     @Override
     public Result<Void, RepositoryException> save(User entity) {
-        var sql = "INSERT INTO User(id, name) VALUES ?, ?";
+        var sql = "INSERT INTO users (id, name) VALUES (?, ?)";
 
         try (var stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, entity.getId().toString());

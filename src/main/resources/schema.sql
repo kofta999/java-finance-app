@@ -1,9 +1,11 @@
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL
 );
 
-CREATE TABLE accounts (
+--
+
+CREATE TABLE IF NOT EXISTS accounts (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     currency TEXT NOT NULL,
@@ -11,7 +13,9 @@ CREATE TABLE accounts (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-CREATE TABLE transactions (
+--
+
+CREATE TABLE IF NOT EXISTS transactions (
     id TEXT PRIMARY KEY,
     date TEXT NOT NULL,
     description TEXT NOT NULL,

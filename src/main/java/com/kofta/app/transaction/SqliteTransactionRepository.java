@@ -3,9 +3,9 @@ package com.kofta.app.transaction;
 import com.kofta.app.common.repository.RepositoryException;
 import com.kofta.app.common.result.Result;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -16,14 +16,14 @@ public class SqliteTransactionRepository implements TransactionRepository {
 
     private Connection connection;
 
-    SqliteTransactionRepository(Connection connection) {
+    public SqliteTransactionRepository(Connection connection) {
         this.connection = connection;
     }
 
     private Transaction mapToTransaction(ResultSet rs) throws SQLException {
         return new Transaction(
             UUID.fromString(rs.getString("id")),
-            rs.getDate("date").toLocalDate(),
+            LocalDate.parse(rs.getString("date")),
             rs.getString("description"),
             rs.getBigDecimal("amount"),
             Category.fromString(rs.getString("category")).orElseThrow(),
@@ -33,7 +33,7 @@ public class SqliteTransactionRepository implements TransactionRepository {
 
     @Override
     public Optional<Transaction> findById(UUID id) {
-        var sql = "SELECT * FROM Transaction WHERE id = ?";
+        var sql = "SELECT * FROM transactions WHERE id = ?";
 
         try (var stmt = connection.prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
@@ -50,7 +50,7 @@ public class SqliteTransactionRepository implements TransactionRepository {
 
     @Override
     public List<Transaction> findAll() {
-        var sql = "SELECT * FROM Transaction";
+        var sql = "SELECT * FROM transactions";
         List<Transaction> res = new ArrayList<>();
 
         try (var stmt = connection.prepareStatement(sql)) {
@@ -69,11 +69,11 @@ public class SqliteTransactionRepository implements TransactionRepository {
     @Override
     public Result<Void, RepositoryException> save(Transaction entity) {
         var sql =
-            "INSERT INTO Transaction(id, date, description, amount, category, account_id) VALUES ?, ?, ?, ?, ?, ?";
+            "INSERT INTO transactions (id, date, description, amount, category, account_id) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (var stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, entity.id().toString());
-            stmt.setDate(2, Date.valueOf(entity.date()));
+            stmt.setString(2, entity.date().toString());
             stmt.setString(3, entity.description());
             stmt.setBigDecimal(4, entity.amount());
             stmt.setString(5, entity.category().toString());
@@ -97,7 +97,7 @@ public class SqliteTransactionRepository implements TransactionRepository {
 
     @Override
     public void deleteById(UUID id) {
-        var sql = "DELETE FROM Transaction WHERE id = ?";
+        var sql = "DELETE FROM transactions WHERE id = ?";
 
         try (var stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, id.toString());

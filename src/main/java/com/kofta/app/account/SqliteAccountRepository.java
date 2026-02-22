@@ -14,7 +14,7 @@ public class SqliteAccountRepository implements AccountRepository {
 
     private Connection connection;
 
-    SqliteAccountRepository(Connection connection) {
+    public SqliteAccountRepository(Connection connection) {
         this.connection = connection;
     }
 
@@ -29,7 +29,7 @@ public class SqliteAccountRepository implements AccountRepository {
 
     @Override
     public Optional<Account> findById(UUID id) {
-        var sql = "SELECT * FROM Account WHERE id = ?";
+        var sql = "SELECT * FROM accounts WHERE id = ?";
 
         try (var stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, id.toString());
@@ -47,7 +47,7 @@ public class SqliteAccountRepository implements AccountRepository {
 
     @Override
     public List<Account> findAll() {
-        var sql = "SELECT * FROM Account";
+        var sql = "SELECT * FROM accounts";
         List<Account> res = new ArrayList<>();
 
         try (var stmt = connection.prepareStatement(sql)) {
@@ -66,7 +66,7 @@ public class SqliteAccountRepository implements AccountRepository {
     @Override
     public Result<Void, RepositoryException> save(Account entity) {
         var sql =
-            "INSERT INTO Account(id, name, currency, user_id) VALUES (?, ?, ?, ?)";
+            "INSERT INTO accounts (id, name, currency, user_id) VALUES (?, ?, ?, ?)";
 
         try (var stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, entity.getId().toString());
@@ -84,7 +84,7 @@ public class SqliteAccountRepository implements AccountRepository {
 
     @Override
     public List<Account> findByUserId(UUID userId) {
-        var sql = "SELECT * FROM Account WHERE user_id = ?";
+        var sql = "SELECT * FROM accounts WHERE user_id = ?";
         List<Account> res = new ArrayList<>();
 
         try (var stmt = connection.prepareStatement(sql)) {

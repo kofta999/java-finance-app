@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Predicate;
 
 public class SqliteTransactionRepository implements TransactionRepository {
 
@@ -97,11 +96,39 @@ public class SqliteTransactionRepository implements TransactionRepository {
     }
 
     @Override
-    public List<Transaction> findAll(Predicate<Transaction> predicate) {
-        // TODO: Either remove this method with something simpler or... good luck out there
-        // Simple implementation to save time
+    public List<Transaction> findAll(TransactionFilter filter) {
+        var sql = new StringBuilder("SELECT * FROM transactions WHERE 1=1");
+        var params = new ArrayList<>();
+        List<Transaction> res = new ArrayList<>();
 
-        return findAll().stream().filter(predicate).toList();
+        if (filter.accountId() != null) {
+            sql.append(" AND account_id = ?");
+            params.add(filter.accountId());
+        }
+
+        if (filter.category() != null) {
+            sql.append(" AND category = ?");
+            params.add(filter.category());
+        }
+
+        try (
+            var connection = dbManager.getConnection();
+            var stmt = connection.prepareStatement(sql.toString())
+        ) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                res.add(mapToTransaction(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println(e);
+        }
+
+        return res;
     }
 
     @Override

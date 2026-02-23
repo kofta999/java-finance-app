@@ -5,6 +5,8 @@ import com.kofta.app.account.AccountService;
 import com.kofta.app.finance.FinanceService;
 import com.kofta.app.finance.TransactionSort;
 import com.kofta.app.transaction.Category;
+import com.kofta.app.transaction.TransactionFilter;
+import com.kofta.app.transaction.TransactionService;
 import com.kofta.app.user.User;
 import com.kofta.app.user.UserService;
 import java.util.Arrays;
@@ -15,6 +17,7 @@ import java.util.function.Function;
 public class FinanceConsole {
 
     private final FinanceService financeService;
+    private final TransactionService transactionService;
     private final UserService userService;
     private final AccountService accountService;
     private final Scanner scanner;
@@ -23,10 +26,12 @@ public class FinanceConsole {
 
     public FinanceConsole(
         FinanceService financeService,
+        TransactionService transactionService,
         UserService userService,
         AccountService accountService
     ) {
         this.financeService = financeService;
+        this.transactionService = transactionService;
         this.userService = userService;
         this.accountService = accountService;
         this.scanner = new Scanner(System.in);
@@ -148,9 +153,8 @@ public class FinanceConsole {
 
         if (selected == null) return;
 
-        var transactions = financeService.filterByCategory(
-            currentAccount.getId(),
-            selected
+        var transactions = transactionService.findAll(
+            new TransactionFilter(currentAccount.getId(), selected)
         );
 
         if (transactions.isEmpty()) {

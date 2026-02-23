@@ -10,6 +10,5 @@ import java.util.UUID;
 public interface FinanceService {
     List<Transaction> sortTransactionsBy(UUID accountId, TransactionSort sort);
     BigDecimal calculateTotal(UUID accountId);
-    List<Transaction> filterByCategory(UUID accountId, Category category);
     Map<Category, BigDecimal> sumByCategory(UUID accountId);
 }

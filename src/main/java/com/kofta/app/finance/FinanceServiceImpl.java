@@ -2,6 +2,7 @@ package com.kofta.app.finance;
 
 import com.kofta.app.transaction.Category;
 import com.kofta.app.transaction.Transaction;
+import com.kofta.app.transaction.TransactionFilter;
 import com.kofta.app.transaction.TransactionRepository;
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -28,19 +29,9 @@ public class FinanceServiceImpl implements FinanceService {
     }
 
     @Override
-    public List<Transaction> filterByCategory(
-        UUID accountId,
-        Category category
-    ) {
-        return transactionRepository.findAll(
-            t -> t.category() == category && t.accountId().equals(accountId)
-        );
-    }
-
-    @Override
     public Map<Category, BigDecimal> sumByCategory(UUID accountId) {
         return transactionRepository
-            .findAll(t -> t.accountId().equals(accountId))
+            .findAll(new TransactionFilter(accountId, null))
             .stream()
             .collect(
                 Collectors.groupingBy(
@@ -65,7 +56,7 @@ public class FinanceServiceImpl implements FinanceService {
         };
 
         return transactionRepository
-            .findAll(t -> t.accountId().equals(accountId))
+            .findAll(new TransactionFilter(accountId, null))
             .stream()
             .sorted(comparator)
             .toList();

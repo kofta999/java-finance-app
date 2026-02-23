@@ -28,8 +28,24 @@ public class InMemoryTransactionRepository implements TransactionRepository {
     }
 
     @Override
-    public List<Transaction> findAll(Predicate<Transaction> predicate) {
-        return map.values().stream().filter(predicate).toList();
+    public List<Transaction> findAll(TransactionFilter filter) {
+        return map
+            .values()
+            .stream()
+            .filter(t -> {
+                // If filter is null, include everything (or handle as needed)
+                if (filter == null) return true;
+
+                boolean matchesAccount = (filter.accountId() == null ||
+                    t.accountId().equals(filter.accountId()));
+
+                boolean matchesCategory = (filter.category() == null ||
+                    t.category().equals(filter.category()));
+
+                // Add more conditions here as your filter grows
+                return matchesAccount && matchesCategory;
+            })
+            .toList();
     }
 
     @Override

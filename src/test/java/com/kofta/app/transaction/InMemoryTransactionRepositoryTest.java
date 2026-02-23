@@ -64,20 +64,29 @@ class InMemoryTransactionRepositoryTest {
     }
 
     @Test
-    @DisplayName("Should find transactions by predicate")
-    void testFindByPredicate() {
-        var result = repository.findAll(t -> t.category() == Category.SHOPPING);
+    @DisplayName("Should find transactions by category")
+    void testFindByCategory() {
+        var filter = new TransactionFilter(null, Category.SHOPPING);
+        var result = repository.findAll(filter);
         assertEquals(1, result.size());
         assertEquals(transaction2, result.get(0));
     }
 
     @Test
-    @DisplayName(
-        "Should return empty list when no transactions match predicate"
-    )
-    void testFindByPredicateNotFound() {
-        var result = repository.findAll(t -> t.category() == Category.HEALTH);
+    @DisplayName("Should return empty list when no transactions match category")
+    void testFindByCategoryNotFound() {
+        var filter = new TransactionFilter(null, Category.HEALTH);
+        var result = repository.findAll(filter);
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Should find transactions by accountId")
+    void testFindByAccountId() {
+        var filter = new TransactionFilter(transaction1.accountId(), null);
+        var result = repository.findAll(filter);
+        assertEquals(1, result.size());
+        assertEquals(transaction1, result.get(0));
     }
 
     @Test

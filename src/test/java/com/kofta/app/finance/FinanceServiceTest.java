@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.kofta.app.transaction.Category;
 import com.kofta.app.transaction.Transaction;
+import com.kofta.app.transaction.TransactionFilter;
 import com.kofta.app.transaction.TransactionParser;
 import com.kofta.app.transaction.TransactionRepository;
 import java.math.BigDecimal;
@@ -14,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -80,79 +80,6 @@ class FinanceServiceTest {
     }
 
     @Test
-    @DisplayName("Get all shopping transactions")
-    void testShoppingCategory() {
-        var transactions = List.of(
-            new Transaction(
-                UUID.randomUUID(),
-                LocalDate.now(),
-                "a",
-                new BigDecimal("10"),
-                Category.FOOD,
-                accountId
-            ),
-            new Transaction(
-                UUID.randomUUID(),
-                LocalDate.now(),
-                "d",
-                new BigDecimal("-30"),
-                Category.SHOPPING,
-                accountId
-            ),
-            new Transaction(
-                UUID.randomUUID(),
-                LocalDate.now(),
-                "e",
-                new BigDecimal("18"),
-                Category.SHOPPING,
-                accountId
-            )
-        );
-
-        when(transactionRepository.findAll(any(Predicate.class))).thenAnswer(
-            invocation -> {
-                Predicate<Transaction> predicate = invocation.getArgument(0);
-                return transactions
-                    .stream()
-                    .filter(predicate)
-                    .collect(Collectors.toList());
-            }
-        );
-
-        var result = service.filterByCategory(accountId, Category.SHOPPING);
-        assertEquals(2, result.size());
-        assertEquals(Category.SHOPPING, result.get(0).category());
-        assertEquals(Category.SHOPPING, result.get(1).category());
-    }
-
-    @Test
-    @DisplayName("Use a category not in list, should get empty list")
-    void testNonExistentCategory() {
-        var transactions = List.of(
-            new Transaction(
-                UUID.randomUUID(),
-                LocalDate.now(),
-                "a",
-                new BigDecimal("10"),
-                Category.FOOD,
-                accountId
-            )
-        );
-        when(transactionRepository.findAll(any(Predicate.class))).thenAnswer(
-            invocation -> {
-                Predicate<Transaction> predicate = invocation.getArgument(0);
-                return transactions
-                    .stream()
-                    .filter(predicate)
-                    .collect(Collectors.toList());
-            }
-        );
-
-        var result = service.filterByCategory(accountId, Category.RENT);
-        assertEquals(Collections.emptyList(), result);
-    }
-
-    @Test
     @DisplayName("Sum by category")
     void testSumByCategory() {
         var transactions = List.of(
@@ -197,15 +124,24 @@ class FinanceServiceTest {
                 accountId
             )
         );
-        when(transactionRepository.findAll(any(Predicate.class))).thenAnswer(
-            invocation -> {
-                Predicate<Transaction> predicate = invocation.getArgument(0);
-                return transactions
-                    .stream()
-                    .filter(predicate)
-                    .collect(Collectors.toList());
-            }
-        );
+        when(
+            transactionRepository.findAll(any(TransactionFilter.class))
+        ).thenAnswer(invocation -> {
+            TransactionFilter filter = invocation.getArgument(0);
+            return transactions
+                .stream()
+                .filter(
+                    t ->
+                        filter.accountId() == null ||
+                        t.accountId().equals(filter.accountId())
+                )
+                .filter(
+                    t ->
+                        filter.category() == null ||
+                        t.category().equals(filter.category())
+                )
+                .collect(Collectors.toList());
+        });
         var result = service.sumByCategory(accountId);
         assertEquals(
             Map.of(
@@ -250,15 +186,24 @@ class FinanceServiceTest {
 
         var transactions = List.of(t2, t3, t1); // Unsorted
 
-        when(transactionRepository.findAll(any(Predicate.class))).thenAnswer(
-            invocation -> {
-                Predicate<Transaction> predicate = invocation.getArgument(0);
-                return transactions
-                    .stream()
-                    .filter(predicate)
-                    .collect(Collectors.toList());
-            }
-        );
+        when(
+            transactionRepository.findAll(any(TransactionFilter.class))
+        ).thenAnswer(invocation -> {
+            TransactionFilter filter = invocation.getArgument(0);
+            return transactions
+                .stream()
+                .filter(
+                    t ->
+                        filter.accountId() == null ||
+                        t.accountId().equals(filter.accountId())
+                )
+                .filter(
+                    t ->
+                        filter.category() == null ||
+                        t.category().equals(filter.category())
+                )
+                .collect(Collectors.toList());
+        });
 
         // Sort by Amount
         // 50, 100, 200 -> t2, t1, t3

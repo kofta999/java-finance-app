@@ -2,7 +2,7 @@ package com.kofta.app.transaction;
 
 import com.kofta.app.common.repository.RepositoryException;
 import com.kofta.app.common.result.Result;
-import java.sql.Connection;
+import com.kofta.app.database.DatabaseConnectionManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -14,10 +14,10 @@ import java.util.function.Predicate;
 
 public class SqliteTransactionRepository implements TransactionRepository {
 
-    private Connection connection;
+    private DatabaseConnectionManager dbManager;
 
-    public SqliteTransactionRepository(Connection connection) {
-        this.connection = connection;
+    public SqliteTransactionRepository(DatabaseConnectionManager dbManager) {
+        this.dbManager = dbManager;
     }
 
     private Transaction mapToTransaction(ResultSet rs) throws SQLException {
@@ -35,7 +35,10 @@ public class SqliteTransactionRepository implements TransactionRepository {
     public Optional<Transaction> findById(UUID id) {
         var sql = "SELECT * FROM transactions WHERE id = ?";
 
-        try (var stmt = connection.prepareStatement(sql)) {
+        try (
+            var connection = dbManager.getConnection();
+            var stmt = connection.prepareStatement(sql)
+        ) {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
@@ -53,7 +56,10 @@ public class SqliteTransactionRepository implements TransactionRepository {
         var sql = "SELECT * FROM transactions";
         List<Transaction> res = new ArrayList<>();
 
-        try (var stmt = connection.prepareStatement(sql)) {
+        try (
+            var connection = dbManager.getConnection();
+            var stmt = connection.prepareStatement(sql)
+        ) {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -71,7 +77,10 @@ public class SqliteTransactionRepository implements TransactionRepository {
         var sql =
             "INSERT INTO transactions (id, date, description, amount, category, account_id) VALUES (?, ?, ?, ?, ?, ?)";
 
-        try (var stmt = connection.prepareStatement(sql)) {
+        try (
+            var connection = dbManager.getConnection();
+            var stmt = connection.prepareStatement(sql)
+        ) {
             stmt.setString(1, entity.id().toString());
             stmt.setString(2, entity.date().toString());
             stmt.setString(3, entity.description());
@@ -99,7 +108,10 @@ public class SqliteTransactionRepository implements TransactionRepository {
     public void deleteById(UUID id) {
         var sql = "DELETE FROM transactions WHERE id = ?";
 
-        try (var stmt = connection.prepareStatement(sql)) {
+        try (
+            var connection = dbManager.getConnection();
+            var stmt = connection.prepareStatement(sql)
+        ) {
             stmt.setString(1, id.toString());
             stmt.executeUpdate();
         } catch (SQLException e) {

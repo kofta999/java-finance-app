@@ -32,11 +32,10 @@ public class App {
             // var userRepository = new InMemoryUserRepository();
             // var accountRepository = new InMemoryAccountRepository();
             // var transactionRepository = new InMemoryTransactionRepository();
-            var connection = dbManager.getConnection();
-            var userRepository = new SqliteUserRepository(connection);
-            var accountRepository = new SqliteAccountRepository(connection);
+            var userRepository = new SqliteUserRepository(dbManager);
+            var accountRepository = new SqliteAccountRepository(dbManager);
             var transactionRepository = new SqliteTransactionRepository(
-                connection
+                dbManager
             );
 
             var transactionParser = new CsvTransactionParser();

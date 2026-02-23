@@ -1,20 +1,31 @@
 package com.kofta.app.database;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.stream.Collectors;
 
 public class DatabaseConnectionManager implements AutoCloseable {
 
-    private final String url;
-    private Connection connection;
+    private final HikariDataSource dataSource;
 
     public DatabaseConnectionManager(String url) {
-        this.url = url;
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(url);
+        config.setMaximumPoolSize(10);
+        config.setMinimumIdle(2);
+        config.setConnectionTimeout(30000);
+        config.setIdleTimeout(600000);
+        config.setMaxLifetime(1800000);
+        config.setAutoCommit(true);
+        config.setConnectionTestQuery("SELECT 1");
+
+        this.dataSource = new HikariDataSource(config);
+
         initializeDatabase();
     }
 
@@ -22,17 +33,16 @@ public class DatabaseConnectionManager implements AutoCloseable {
         try (var conn = getConnection()) {
             runMigrations(conn);
         } catch (SQLException e) {
-            System.out.println(e);
             throw new RuntimeException("Failed to initialize database", e);
         }
     }
 
+    /**
+     * Gets a connection from the pool
+     * IMPORTANT: Must be used in try-with-resources block to return to pool
+     */
     public Connection getConnection() throws SQLException {
-        if (connection == null || connection.isClosed()) {
-            connection = DriverManager.getConnection(url);
-        }
-
-        return connection;
+        return dataSource.getConnection();
     }
 
     private void runMigrations(Connection conn) throws SQLException {
@@ -60,8 +70,8 @@ public class DatabaseConnectionManager implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        if (connection != null && !connection.isClosed()) {
-            connection.close();
+        if (dataSource != null && !dataSource.isClosed()) {
+            dataSource.close();
         }
     }
 }

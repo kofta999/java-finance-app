@@ -2,7 +2,7 @@ package com.kofta.app.account;
 
 import com.kofta.app.common.repository.RepositoryException;
 import com.kofta.app.common.result.Result;
-import java.sql.Connection;
+import com.kofta.app.database.DatabaseConnectionManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -12,10 +12,10 @@ import java.util.UUID;
 
 public class SqliteAccountRepository implements AccountRepository {
 
-    private Connection connection;
+    private DatabaseConnectionManager dbManager;
 
-    public SqliteAccountRepository(Connection connection) {
-        this.connection = connection;
+    public SqliteAccountRepository(DatabaseConnectionManager dbManager) {
+        this.dbManager = dbManager;
     }
 
     private Account mapToAccount(ResultSet rs) throws SQLException {
@@ -31,7 +31,10 @@ public class SqliteAccountRepository implements AccountRepository {
     public Optional<Account> findById(UUID id) {
         var sql = "SELECT * FROM accounts WHERE id = ?";
 
-        try (var stmt = connection.prepareStatement(sql)) {
+        try (
+            var connection = dbManager.getConnection();
+            var stmt = connection.prepareStatement(sql)
+        ) {
             stmt.setString(1, id.toString());
             ResultSet rs = stmt.executeQuery();
 
@@ -50,7 +53,10 @@ public class SqliteAccountRepository implements AccountRepository {
         var sql = "SELECT * FROM accounts";
         List<Account> res = new ArrayList<>();
 
-        try (var stmt = connection.prepareStatement(sql)) {
+        try (
+            var connection = dbManager.getConnection();
+            var stmt = connection.prepareStatement(sql)
+        ) {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -68,7 +74,10 @@ public class SqliteAccountRepository implements AccountRepository {
         var sql =
             "INSERT INTO accounts (id, name, currency, user_id) VALUES (?, ?, ?, ?)";
 
-        try (var stmt = connection.prepareStatement(sql)) {
+        try (
+            var connection = dbManager.getConnection();
+            var stmt = connection.prepareStatement(sql)
+        ) {
             stmt.setString(1, entity.getId().toString());
             stmt.setString(2, entity.getName());
             stmt.setString(3, entity.getCurrency());
@@ -87,7 +96,10 @@ public class SqliteAccountRepository implements AccountRepository {
         var sql = "SELECT * FROM accounts WHERE user_id = ?";
         List<Account> res = new ArrayList<>();
 
-        try (var stmt = connection.prepareStatement(sql)) {
+        try (
+            var connection = dbManager.getConnection();
+            var stmt = connection.prepareStatement(sql)
+        ) {
             stmt.setString(1, userId.toString());
             ResultSet rs = stmt.executeQuery();
 

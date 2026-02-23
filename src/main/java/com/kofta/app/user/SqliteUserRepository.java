@@ -2,7 +2,7 @@ package com.kofta.app.user;
 
 import com.kofta.app.common.repository.RepositoryException;
 import com.kofta.app.common.result.Result;
-import java.sql.Connection;
+import com.kofta.app.database.DatabaseConnectionManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -12,10 +12,10 @@ import java.util.UUID;
 
 public class SqliteUserRepository implements UserRepository {
 
-    private Connection connection;
+    private DatabaseConnectionManager dbManager;
 
-    public SqliteUserRepository(Connection connection) {
-        this.connection = connection;
+    public SqliteUserRepository(DatabaseConnectionManager dbManager) {
+        this.dbManager = dbManager;
     }
 
     private User mapToUser(ResultSet rs) throws SQLException {
@@ -29,7 +29,10 @@ public class SqliteUserRepository implements UserRepository {
     public Optional<User> findById(UUID id) {
         var sql = "SELECT * FROM users WHERE id = ?";
 
-        try (var stmt = connection.prepareStatement(sql)) {
+        try (
+            var connection = dbManager.getConnection();
+            var stmt = connection.prepareStatement(sql)
+        ) {
             stmt.setString(1, id.toString());
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -47,7 +50,10 @@ public class SqliteUserRepository implements UserRepository {
         var sql = "SELECT * FROM users";
         List<User> res = new ArrayList<>();
 
-        try (var stmt = connection.prepareStatement(sql)) {
+        try (
+            var connection = dbManager.getConnection();
+            var stmt = connection.prepareStatement(sql)
+        ) {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 res.add(mapToUser(rs));
@@ -63,7 +69,10 @@ public class SqliteUserRepository implements UserRepository {
     public Result<Void, RepositoryException> save(User entity) {
         var sql = "INSERT INTO users (id, name) VALUES (?, ?)";
 
-        try (var stmt = connection.prepareStatement(sql)) {
+        try (
+            var connection = dbManager.getConnection();
+            var stmt = connection.prepareStatement(sql)
+        ) {
             stmt.setString(1, entity.getId().toString());
             stmt.setString(2, entity.getName());
             stmt.executeUpdate();
